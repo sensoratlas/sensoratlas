@@ -26,3 +26,8 @@ path('polls/', include('polls.urls')),
 4. Run `python manage.py migrate` to create the pyMatau (SensorThings) models.
 
 5. Start the development server and visit http://127.0.0.1:8000/api/v1.0/
+
+
+## tests
+
+`python setup.py test`
