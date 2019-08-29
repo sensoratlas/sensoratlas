@@ -18,6 +18,7 @@ setup(
     url='https://www.example.com/',
     author='Joseph Percival',
     author_email='ipercival@gmail.com',
+    test_suite="runtests.runtests",
     python_requires=">=3.6",
     install_requires=[
         'boolean.py>=3.6',
