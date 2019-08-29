@@ -1,0 +1,6 @@
+boolean.py>=3.6
+djangorestframework>=3.9
+Django>=2.1
+psycopg2>=2.8.2
+djangorestframework-expander>=0.2.3
+python-dateutil>=2.8.0

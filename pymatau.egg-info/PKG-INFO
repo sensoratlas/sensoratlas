@@ -1,0 +1,47 @@
+Metadata-Version: 1.2
+Name: pymatau
+Version: 0.1
+Summary: An OGC SensorThings API implementation in Python.
+Home-page: https://www.example.com/
+Author: Joseph Percival
+Author-email: ipercival@gmail.com
+License: MIT License
+Description: # pyMatau
+        
+        pyMatau is an OGC SensorThings API implementation in Python.
+        
+        Detailed documentation is in the "docs" directory.
+        
+        ## Quick start
+        
+        1. Add "pymatau" to your INSTALLED_APPS setting like this::
+        
+        ```buildoutcfg
+        INSTALLED_APPS = [
+            ...
+            'pymatau',
+        ]
+        ```
+        
+        2. Include the pyMatau URLconf in your project urls.py like this::
+        
+        ```buildoutcfg
+        path('polls/', include('polls.urls')),
+        ```
+        
+        3. Run `python manage.py migrate` to create the pyMatau (SensorThings) models.
+        
+        4. Start the development server and visit http://127.0.0.1:8000/api/v1.0/
+        
+Platform: UNKNOWN
+Classifier: Environment :: Web Environment
+Classifier: Framework :: Django
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Requires-Python: >=3.6
