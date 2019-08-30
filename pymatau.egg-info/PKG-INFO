@@ -25,16 +25,33 @@ Description: # pyMatau
         ]
         ```
         
-        3. Include the pyMatau URLconf in your project urls.py like this::
+        3. Also include the following Django Rest Framework settings in your settings.py file:
         
         ```buildoutcfg
-        path('polls/', include('polls.urls')),
+        REST_FRAMEWORK = {
+            'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
+            'URL_FIELD_NAME': 'selfLink',
+            'ORDERING_PARAM': '$orderby',
+            'DEFAULT_PAGINATION_CLASS': 'pymatau.query_options.SensorThingsPagination',
+            'PAGE_SIZE': 100,
+            'TEST_REQUEST_DEFAULT_FORMAT': 'json'
+        }
         ```
         
-        4. Run `python manage.py migrate` to create the pyMatau (SensorThings) models.
+        4. Include the pyMatau URLconf in your project urls.py like this::
         
-        5. Start the development server and visit http://127.0.0.1:8000/api/v1.0/
+        ```buildoutcfg
+        path('api/', include('pymatau.urls')),
+        ```
         
+        5. Run `python manage.py migrate` to create the pyMatau (SensorThings) models.
+        
+        6. Start the development server and visit http://127.0.0.1:8000/api/v1.0/
+        
+        
+        ## tests
+        
+        `python setup.py test`
 Platform: UNKNOWN
 Classifier: Environment :: Web Environment
 Classifier: Framework :: Django
