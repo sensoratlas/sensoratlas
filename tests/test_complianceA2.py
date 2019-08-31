@@ -1735,6 +1735,7 @@ class A_2_1_6(APITestCase):
         query = "time(phenomenonTime) eq 04:05:00+0900"
         response = self.client.get("/api/v1.0/Observations?$filter=" + query)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        print("RESPONSE: ", response)
         self.assertGreaterEqual(len(response.data['value']), 1)
         self.assertEqual(response.data['value'][0]['result'], 35)
 
