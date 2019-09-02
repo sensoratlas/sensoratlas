@@ -2,7 +2,7 @@ from rest_framework.reverse import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from pymatau.models import Thing, Location, HistoricalLocation, \
-    DataStream, Sensor, ObservedProperty, Observation, FeatureOfInterest
+    Datastream, Sensor, ObservedProperty, Observation, FeatureOfInterest
 from django.contrib.gis.geos import Point, Polygon
 from django.utils import timezone
 
@@ -55,7 +55,7 @@ class A_1_1(APITestCase):
                              (50.0, 0.0),
                              (0.0, 0.0))
                             ))
-        datastream = DataStream.objects.create(
+        datastream = Datastream.objects.create(
             name='Chunt',
             description='Bing Bong',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
@@ -257,7 +257,7 @@ class A_1_5(APITestCase):
             definition='https://wikipedia.org',
             description='This is a test'
             )
-        DataStream.objects.create(
+        Datastream.objects.create(
             name='Chunt',
             description='Bing Bong',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
@@ -272,7 +272,7 @@ class A_1_5(APITestCase):
         """
         Tests requirement 9.
         """
-        datastream = DataStream.objects.get(name='Chunt')
+        datastream = Datastream.objects.get(name='Chunt')
         properties = [
             'name',
             'description',
@@ -289,7 +289,7 @@ class A_1_5(APITestCase):
         """
         Tests requirement 10.
         """
-        datastream = DataStream.objects.get(name='Chunt')
+        datastream = Datastream.objects.get(name='Chunt')
         entities = [
             'Thing',
             'Sensor',
@@ -407,7 +407,7 @@ class A_1_8(APITestCase):
             definition='https://wikipedia.org',
             description='This is a test'
             )
-        DataStream.objects.create(
+        Datastream.objects.create(
             name='Chunt',
             description='Bing Bong',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
@@ -431,7 +431,7 @@ class A_1_8(APITestCase):
             phenomenonTime="2019-02-07T18:00:00.000Z",
             result=42,
             resultTime="2019-02-07T18:00:00.000Z",
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore')
             )
 
@@ -554,7 +554,7 @@ class A_1_10(APITestCase):
                              (50.0, 0.0),
                              (0.0, 0.0))
                             ))
-        DataStream.objects.create(
+        Datastream.objects.create(
             name='Chunt',
             description='Bing Bong',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
@@ -573,42 +573,42 @@ class A_1_10(APITestCase):
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:01:00.000Z",
             result=42,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:01:00.000Z",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:02:00.000Z",
             result=3,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:02:00.000Z",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:03:00.000Z",
             result=15.7,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:04:00.000Z",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:04:00.000Z",
             result=23,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:04:00.000Z",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:05:00.000Z",
             result=1,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:05:00.000Z",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:06:00.000Z",
             result=35,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:06:00.000Z",
             )
@@ -636,7 +636,7 @@ class A_1_10(APITestCase):
         thing = Thing.objects.get(name='Thing 1')
         location = thing.Locations.get(name='Location 1')
         hlocat = HistoricalLocation.objects.get(Thing__name=thing.name)
-        datastream = DataStream.objects.get(Thing__name=thing.name)
+        datastream = Datastream.objects.get(Thing__name=thing.name)
         sensor = Sensor.objects.get(Datastreams__name=datastream.name)
         oprop = ObservedProperty.objects.get(Datastreams__name=datastream.name)
         obs = Observation.objects.filter(Datastream__name=datastream.name)
@@ -810,7 +810,7 @@ class A_1_10(APITestCase):
         location = Location.objects.get(name='Location 1')
         thing = Thing.objects.filter(Locations__name=location.name)
         hlocat = HistoricalLocation.objects.filter(Locations__name=location.name)
-        datastream = DataStream.objects.filter(Thing__name=thing[0].name)
+        datastream = Datastream.objects.filter(Thing__name=thing[0].name)
         sensor = Sensor.objects.filter(Datastreams__name=datastream[0].name)
         oprop = ObservedProperty.objects.filter(Datastreams__name=datastream[0].name)
         obs = Observation.objects.filter(Datastream__name=datastream[0].name)
@@ -1082,7 +1082,7 @@ class A_1_10(APITestCase):
         hlocat = HistoricalLocation.objects.get(Locations__name='Location 1')
         thing = Thing.objects.get(HistoricalLocations__id=hlocat.id)
         location = Location.objects.get(HistoricalLocations__id=hlocat.id)
-        datastream = DataStream.objects.filter(Thing__name=thing.name)
+        datastream = Datastream.objects.filter(Thing__name=thing.name)
         sensor = Sensor.objects.filter(Datastreams__name=datastream[0].name)
         oprop = ObservedProperty.objects.filter(Datastreams__name=datastream[0].name)
         obs = Observation.objects.filter(Datastream__name=datastream[0].name)
@@ -1351,7 +1351,7 @@ class A_1_10(APITestCase):
         Ensure that all nested paths for the datastreams entity are available
         and the appropriate response is returned.
         """
-        datastream = DataStream.objects.get(name='Chunt')
+        datastream = Datastream.objects.get(name='Chunt')
         thing = datastream.Thing
         location = datastream.Thing.Locations.get(name='Location 1')
         hlocat = HistoricalLocation.objects.get(Thing__name=thing.name)
@@ -1526,7 +1526,7 @@ class A_1_10(APITestCase):
         the appropriate response is returned.
         """
         sensor = Sensor.objects.get(name='Temperature Sensor')
-        datastream = DataStream.objects.get(Sensor__name=sensor.name)
+        datastream = Datastream.objects.get(Sensor__name=sensor.name)
         thing = datastream.Thing
         location = thing.Locations.get(name='Location 1')
         hlocat = HistoricalLocation.objects.get(Thing__name=thing.name)
@@ -1716,7 +1716,7 @@ class A_1_10(APITestCase):
         available and the appropriate response is returned.
         """
         oprop = ObservedProperty.objects.get(name='Temperature')
-        datastream = DataStream.objects.get(ObservedProperty__name=oprop.name)
+        datastream = Datastream.objects.get(ObservedProperty__name=oprop.name)
         thing = datastream.Thing
         location = thing.Locations.get(name='Location 1')
         hlocat = HistoricalLocation.objects.get(Thing__name=thing.name)
@@ -1906,7 +1906,7 @@ class A_1_10(APITestCase):
         available and the appropriate response is returned.
         """
         obs = Observation.objects.last()
-        datastream = DataStream.objects.get(Observations__id=obs.id)
+        datastream = Datastream.objects.get(Observations__id=obs.id)
         thing = datastream.Thing
         location = thing.Locations.get(name='Location 1')
         hlocat = HistoricalLocation.objects.get(Thing__name=thing.name)
@@ -2093,7 +2093,7 @@ class A_1_10(APITestCase):
         """
         foi = FeatureOfInterest.objects.get(name="Usidore")
         obs = Observation.objects.filter(FeatureOfInterest__name=foi.name)
-        datastream = DataStream.objects.filter(Observations__id=obs[0].id)
+        datastream = Datastream.objects.filter(Observations__id=obs[0].id)
         sensor = Sensor.objects.filter(Datastreams__name=datastream[0].name)
         oprop = ObservedProperty.objects.filter(Datastreams__name=datastream[0].name)
         thing = Thing.objects.filter(Datastreams__name=datastream[0].name)
@@ -2370,7 +2370,7 @@ class A_1_10(APITestCase):
         Ensure that all nested paths for the things entity are available and
         the appropriate response is returned.
         """
-        datastream = DataStream.objects.get(name='Chunt')
+        datastream = Datastream.objects.get(name='Chunt')
         properties = [
             'name',
             'description',
@@ -2518,7 +2518,7 @@ class A_1_10(APITestCase):
         for ref in response.data['value']:
             self.assertIn('@iot.selfLink', ref)
 
-        DataStream.objects.create(
+        Datastream.objects.create(
             name='Arnie',
             description='Kneecamp',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
@@ -2531,12 +2531,12 @@ class A_1_10(APITestCase):
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:08:00.000Z",
             result=21,
-            Datastream=DataStream.objects.get(name="Arnie"),
+            Datastream=Datastream.objects.get(name="Arnie"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:08:00.000Z",
             )
 
-        datastream = DataStream.objects.get(name='Arnie')
+        datastream = Datastream.objects.get(name='Arnie')
         baseurl = reverse('datastream-detail',
                           kwargs={'version': 'v1.0',
                                   'pk': datastream.id

@@ -5,7 +5,7 @@ import pymatau.views as datastream
 class DatastreamRouter:
     Router.router.register(
                 r'Datastreams',
-                datastream.DataStreamView,
+                datastream.DatastreamView,
                 'datastream'
                 )
 

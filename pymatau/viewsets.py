@@ -1,4 +1,4 @@
-from .models import Location, Thing, DataStream, Sensor, \
+from .models import Location, Thing, Datastream, Sensor, \
     ObservedProperty, Observation, FeatureOfInterest, HistoricalLocation
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -50,9 +50,9 @@ class PostRelations(object):
         try:
             id = data["@iot.id"]
             try:
-                datastream = DataStream.objects.get(id=id)
+                datastream = Datastream.objects.get(id=id)
                 return datastream
-            except DataStream.DoesNotExist:
+            except Datastream.DoesNotExist:
                 return
         except KeyError:
             raise BadRequest()
@@ -88,7 +88,7 @@ class PostRelations(object):
                 try:
                     t = Thing.objects.get(id=id)
                     things.append(t)
-                except DataStream.DoesNotExist:
+                except Datastream.DoesNotExist:
                     return
             except KeyError:
                 raise BadRequest()
@@ -114,9 +114,9 @@ class PostRelations(object):
             try:
                 id = ds["@iot.id"]
                 try:
-                    datastr = DataStream.objects.get(id=id)
+                    datastr = Datastream.objects.get(id=id)
                     datastream.append(datastr)
-                except DataStream.DoesNotExist:
+                except Datastream.DoesNotExist:
                     return
             except KeyError:
                 raise BadRequest()
@@ -130,7 +130,7 @@ class PostRelations(object):
                 try:
                     observ = Observation.objects.get(id=id)
                     observation.append(observ)
-                except DataStream.DoesNotExist:
+                except Datastream.DoesNotExist:
                     return
             except KeyError:
                 raise BadRequest()
@@ -207,9 +207,9 @@ class PostRelations(object):
         try:
             id = data["@iot.id"]
             try:
-                datastream = DataStream.objects.get(id=id)
+                datastream = Datastream.objects.get(id=id)
                 return datastream
-            except DataStream.DoesNotExist:
+            except Datastream.DoesNotExist:
                 return
         except KeyError:
             d = {}
@@ -246,7 +246,7 @@ class PostRelations(object):
                     d['resultTime'] = data["resultTime"]
                 except KeyError:
                     pass
-                datastr, created = DataStream.objects.get_or_create(**d)
+                datastr, created = Datastream.objects.get_or_create(**d)
                 return datastr
             except KeyError:
                 return
@@ -319,7 +319,7 @@ class PostRelations(object):
                 try:
                     t = Thing.objects.get(id=id)
                     things.append(t)
-                except DataStream.DoesNotExist:
+                except Datastream.DoesNotExist:
                     return
             except KeyError:
                 d = {}
@@ -406,9 +406,9 @@ class PostRelations(object):
             try:
                 id = ds["@iot.id"]
                 try:
-                    datastr = DataStream.objects.get(id=id)
+                    datastr = Datastream.objects.get(id=id)
                     datastream.append(datastr)
-                except DataStream.DoesNotExist:
+                except Datastream.DoesNotExist:
                     return
             except KeyError:
                 try:
@@ -462,7 +462,7 @@ class PostRelations(object):
                         d['resultTime'] = ds["resultTime"]
                     except KeyError:
                         pass
-                    datastr, created = DataStream.objects.get_or_create(**d)
+                    datastr, created = Datastream.objects.get_or_create(**d)
                     # not required relations
                     try:
                         observationData = ds['Observations']
@@ -489,7 +489,7 @@ class PostRelations(object):
                 try:
                     observ = Observation.objects.get(id=id)
                     observation.append(observ)
-                except DataStream.DoesNotExist:
+                except Datastream.DoesNotExist:
                     return
             except KeyError:
                 try:
@@ -1232,7 +1232,7 @@ class NavigationLinks:
         "Thing": "Things_pk",
         "Location": "Locations_pk",
         "HistoricalLocation": "HistoricalLocations_pk",
-        "DataStream": "Datastreams_pk",
+        "Datastream": "Datastreams_pk",
         "Sensor": "Sensors_pk",
         "ObservedProperty": "ObservedProperties_pk",
         "Observation": "Observations_pk",

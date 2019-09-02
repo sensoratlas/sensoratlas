@@ -23,7 +23,7 @@ class ObservationRouter:
 
     observation_router.register(
                 r'Datastream',
-                observation.DataStreamView,
+                observation.DatastreamView,
                 'datastream'
                 )
 

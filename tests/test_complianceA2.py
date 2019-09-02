@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
-from pymatau.models import Thing, Location, DataStream, Sensor, \
+from pymatau.models import Thing, Location, Datastream, Sensor, \
     ObservedProperty, Observation, FeatureOfInterest, HistoricalLocation
 from django.contrib.gis.geos import Point, Polygon, LineString
 from django.utils import timezone
@@ -53,7 +53,7 @@ class A_2_1_1(APITestCase):
                              (50.0, 0.0),
                              (0.0, 0.0))
                             ))
-        DataStream.objects.create(
+        Datastream.objects.create(
             name='Chunt',
             description='Bing Bong',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
@@ -63,7 +63,7 @@ class A_2_1_1(APITestCase):
             Sensor=Sensor.objects.get(name='Temperature Sensor'),
             ObservedProperty=ObservedProperty.objects.get(name='Temperature')
             )
-        DataStream.objects.create(
+        Datastream.objects.create(
             name='Spintax',
             description='The Green',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Observation",
@@ -76,63 +76,63 @@ class A_2_1_1(APITestCase):
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:09:00+00:00",
             result=42,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:09:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:10:00+00:00",
             result=3,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:10:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:11:00+00:00",
             result=15.7,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:11:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:12:00+00:00",
             result=23,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:12:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:13:00+00:00",
             result=1,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:13:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:14:00+00:00",
             result=35,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:14:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:15:00+00:00",
             result='Lie',
-            Datastream=DataStream.objects.get(name="Spintax"),
+            Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:15:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:16:00+00:00",
             result='Truth',
-            Datastream=DataStream.objects.get(name="Spintax"),
+            Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:16:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:17:00+00:00",
             result='Truth',
-            Datastream=DataStream.objects.get(name="Spintax"),
+            Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:17:00+00:00",
             )
@@ -343,7 +343,7 @@ class A_2_1_2(APITestCase):
                              (50.0, 0.0),
                              (0.0, 0.0))
                             ))
-        DataStream.objects.create(
+        Datastream.objects.create(
             name='Chunt',
             description='Bing Bong',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
@@ -353,7 +353,7 @@ class A_2_1_2(APITestCase):
             Sensor=Sensor.objects.get(name='Temperature Sensor'),
             ObservedProperty=ObservedProperty.objects.get(name='Temperature')
             )
-        DataStream.objects.create(
+        Datastream.objects.create(
             name='Spintax',
             description='The Green',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Observation",
@@ -366,70 +366,70 @@ class A_2_1_2(APITestCase):
         Observation.objects.create(
             phenomenonTime="2019-02-07T19:00:00+00:00",
             result=42,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T19:00:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T19:01:00+00:00",
             result=3,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T19:01:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T19:02:00+00:00",
             result=15.7,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T19:02:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T19:03:00+00:00",
             result=23,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T19:03:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T19:04:00+00:00",
             result=1,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T19:04:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T19:05:00+00:00",
             result=35,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T19:05:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T19:06:00+00:00",
             result='Lie',
-            Datastream=DataStream.objects.get(name="Spintax"),
+            Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T19:06:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T19:07:00+00:00",
             result='Truth',
-            Datastream=DataStream.objects.get(name="Spintax"),
+            Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T19:07:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T19:08:00+00:00",
             result='Truth',
-            Datastream=DataStream.objects.get(name="Spintax"),
+            Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T19:08:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T15:00:00+00:00",
             result='Truth',
-            Datastream=DataStream.objects.get(name="Spintax"),
+            Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T15:00:00+00:00"
             )
@@ -539,7 +539,7 @@ class A_2_1_2(APITestCase):
 
     def test_select3(self):
         thing = Thing.objects.get(name='Thing 1')
-        datastream = DataStream.objects.get(name='Chunt')
+        datastream = Datastream.objects.get(name='Chunt')
         query = '$select=result,phenomenonTime'
         response = self.client.get(
             '/api/v1.0/Things(' + str(thing.id) + ')/Datastreams(' +
@@ -633,7 +633,7 @@ class A_2_1_4(APITestCase):
                              (50.0, 0.0),
                              (0.0, 0.0))
                             ))
-        DataStream.objects.create(
+        Datastream.objects.create(
             name='Chunt',
             description='Bing Bong',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
@@ -643,7 +643,7 @@ class A_2_1_4(APITestCase):
             Sensor=Sensor.objects.get(name='Temperature Sensor'),
             ObservedProperty=ObservedProperty.objects.get(name='Temperature')
             )
-        DataStream.objects.create(
+        Datastream.objects.create(
             name='Spintax',
             description='The Green',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Observation",
@@ -656,70 +656,70 @@ class A_2_1_4(APITestCase):
         Observation.objects.create(
             phenomenonTime="2019-02-07T20:01:00+00:00",
             result=42,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T20:01:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T20:02:00+00:00",
             result=42,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T20:02:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T20:03:00+00:00",
             result=42,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T20:03:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T20:04:00+00:00",
             result=23,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T20:04:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T20:05:00+00:00",
             result=1,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T20:05:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T20:06:00+00:00",
             result=35,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T20:06:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T20:07:00+00:00",
             result='Lie',
-            Datastream=DataStream.objects.get(name="Spintax"),
+            Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T20:07:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T20:08:00+00:00",
             result='Truth',
-            Datastream=DataStream.objects.get(name="Spintax"),
+            Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T20:08:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T20:09:00+00:00",
             result='Truth',
-            Datastream=DataStream.objects.get(name="Spintax"),
+            Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T20:09:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T20:00:00+00:00",
             result='Truth',
-            Datastream=DataStream.objects.get(name="Spintax"),
+            Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T20:00:00+00:00"
             )
@@ -750,7 +750,7 @@ class A_2_1_4(APITestCase):
 
     def test_orderby4(self):
         thing = Thing.objects.get(name='Thing 1')
-        datastream = DataStream.objects.get(name='Chunt')
+        datastream = Datastream.objects.get(name='Chunt')
         query = '$orderby=id'
         response = self.client.get(
             '/api/v1.0/Things(' + str(thing.id) + ')/Datastreams(' +
@@ -781,7 +781,7 @@ class A_2_1_4(APITestCase):
         Observation.objects.create(
             phenomenonTime="2019-02-07T20:11:00+00:00",
             result=None,
-            Datastream=DataStream.objects.get(name="Spintax"),
+            Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T20:11:00+00:00"
             )
@@ -844,7 +844,7 @@ class A_2_1_5(APITestCase):
                              (50.0, 0.0),
                              (0.0, 0.0))
                             ))
-        DataStream.objects.create(
+        Datastream.objects.create(
             name='Chunt',
             description='Bing Bong',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
@@ -854,7 +854,7 @@ class A_2_1_5(APITestCase):
             Sensor=Sensor.objects.get(name='Temperature Sensor'),
             ObservedProperty=ObservedProperty.objects.get(name='Temperature')
             )
-        DataStream.objects.create(
+        Datastream.objects.create(
             name='Spintax',
             description='The Green',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Observation",
@@ -867,70 +867,70 @@ class A_2_1_5(APITestCase):
         Observation.objects.create(
             phenomenonTime="2019-02-07T21:01:00+00:00",
             result=42,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T21:01:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T21:02:00+00:00",
             result=3,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T21:02:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T21:03:00+00:00",
             result=15.7,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T21:03:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T21:04:00+00:00",
             result=23,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T21:04:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T21:05:00+00:00",
             result=1,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T21:05:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T21:06:00+00:00",
             result=35,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T21:06:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T21:07:00+00:00",
             result='Lie',
-            Datastream=DataStream.objects.get(name="Spintax"),
+            Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T21:07:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T21:08:00+00:00",
             result='Truth',
-            Datastream=DataStream.objects.get(name="Spintax"),
+            Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T21:08:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T21:09:00+00:00",
             result='Truth',
-            Datastream=DataStream.objects.get(name="Spintax"),
+            Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T21:09:00+00:00",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T21:00:00+00:00",
             result='Truth',
-            Datastream=DataStream.objects.get(name="Spintax"),
+            Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T21:00:00+00:00"
             )
@@ -952,7 +952,7 @@ class A_2_1_5(APITestCase):
 
     def test_top3(self):
         thing = Thing.objects.get(name='Thing 1')
-        datastream = DataStream.objects.get(name='Chunt')
+        datastream = Datastream.objects.get(name='Chunt')
         query = '$top=2'
         response = self.client.get(
             '/api/v1.0/Things(' + str(thing.id) + ')/Datastreams(' +
@@ -988,7 +988,7 @@ class A_2_1_5(APITestCase):
 
     def test_skip2(self):
         thing = Thing.objects.get(name='Thing 1')
-        datastream = DataStream.objects.get(name='Chunt')
+        datastream = Datastream.objects.get(name='Chunt')
         query = '$skip=4'
         response = self.client.get(
             '/api/v1.0/Things(' + str(thing.id) + ')/Datastreams(' +
@@ -1244,7 +1244,7 @@ class A_2_1_6(APITestCase):
                              (0.0, 0.0))
                             ))
 
-        DataStream.objects.create(
+        Datastream.objects.create(
             name='Chunt',
             description='Bing Bong',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
@@ -1254,7 +1254,7 @@ class A_2_1_6(APITestCase):
             Sensor=Sensor.objects.get(name='Temperature Sensor'),
             ObservedProperty=ObservedProperty.objects.get(name='Temperature')
             )
-        DataStream.objects.create(
+        Datastream.objects.create(
             name='Spintax',
             description='The Green',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Observation",
@@ -1267,70 +1267,70 @@ class A_2_1_6(APITestCase):
         Observation.objects.create(
             phenomenonTime="2019-03-24 04:00:00+0900",
             result=42,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime=timezone.now().strftime("%Y-%m-%d %H:%M:%S%z"),
             )
         Observation.objects.create(
             phenomenonTime="2019-03-24 04:01:00+0900",
             result=3,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime=timezone.now().strftime("%Y-%m-%d %H:%M:%S%z"),
             )
         Observation.objects.create(
             phenomenonTime="2019-03-24 04:02:00+0900",
             result=15.7,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime=timezone.now().strftime("%Y-%m-%d %H:%M:%S%z"),
             )
         Observation.objects.create(
             phenomenonTime="2019-03-24 04:03:00+0900",
             result=23,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime=timezone.now().strftime("%Y-%m-%d %H:%M:%S%z"),
             )
         Observation.objects.create(
             phenomenonTime="2019-03-24 04:04:00+0900",
             result=1,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime=timezone.now().strftime("%Y-%m-%d %H:%M:%S%z"),
             )
         Observation.objects.create(
             phenomenonTime="2019-03-24 04:05:00+0900",
             result=35,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime=timezone.now().strftime("%Y-%m-%d %H:%M:%S%z"),
             )
         Observation.objects.create(
             phenomenonTime="2019-03-24 04:00:00+0900",
             result='Lie',
-            Datastream=DataStream.objects.get(name="Spintax"),
+            Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime=timezone.now().strftime("%Y-%m-%d %H:%M:%S%z"),
             )
         Observation.objects.create(
             phenomenonTime="2019-03-24 04:01:00+0900",
             result='Truth',
-            Datastream=DataStream.objects.get(name="Spintax"),
+            Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime=timezone.now().strftime("%Y-%m-%d %H:%M:%S%z"),
             )
         Observation.objects.create(
             phenomenonTime="2019-03-24 04:02:00+0900",
             result='Truth',
-            Datastream=DataStream.objects.get(name="Spintax"),
+            Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime=timezone.now().strftime("%Y-%m-%d %H:%M:%S%z"),
             )
         Observation.objects.create(
             phenomenonTime="2019-03-24 04:03:00+0900",
             result='Truth',
-            Datastream=DataStream.objects.get(name="Spintax"),
+            Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime=timezone.now().strftime("%Y-%m-%d %H:%M:%S%z")
             )
@@ -1350,7 +1350,7 @@ class A_2_1_6(APITestCase):
         query1 = '$filter=result lt 5'
         query2 = '$select=result,resultTime'
         query3 = '$orderby=id desc'
-        datastream = DataStream.objects.get(name='Chunt')
+        datastream = Datastream.objects.get(name='Chunt')
         response = self.client.get(
             '/api/v1.0/Datastreams(' + str(datastream.id) +
             ')/Observations?' + query1 + '&' + query2 + '&' + query3)
@@ -1399,7 +1399,7 @@ class A_2_1_6(APITestCase):
         self.assertEqual(response.data['value'][0]['result'], 42)
 
     def test_filter_operations_lt(self):
-        datastream = DataStream.objects.get(name="Chunt")
+        datastream = Datastream.objects.get(name="Chunt")
         query = '$filter=result lt 35'
         response = self.client.get('/api/v1.0/Datastreams(' +
                                    str(datastream.id) +
@@ -1411,7 +1411,7 @@ class A_2_1_6(APITestCase):
         self.assertEqual(response.data['value'][0]['result'], 3)
 
     def test_filter_operations_le(self):
-        datastream = DataStream.objects.get(name="Chunt")
+        datastream = Datastream.objects.get(name="Chunt")
         query = '$filter=result le 35'
         response = self.client.get('/api/v1.0/Datastreams(' +
                                    str(datastream.id) +
@@ -1804,7 +1804,7 @@ class A_2_1_6(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_nested_filter_operations_eq(self):
-        datastream = DataStream.objects.get(name='Spintax')
+        datastream = Datastream.objects.get(name='Spintax')
         query = '$filter=result eq Lie'
         response = self.client.get('/api/v1.0/Datastreams(' +
                                    str(datastream.id) +

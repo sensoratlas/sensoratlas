@@ -35,7 +35,7 @@ class HistoricalLocationRouter:
 
     historicallocation_things_router.register(
                 r'Datastreams',
-                historicallocation.DataStreamView,
+                historicallocation.DatastreamView,
                 'datastream'
                 )
 
@@ -96,7 +96,7 @@ class HistoricalLocationRouter:
 
     historicallocation_locat_things_router.register(
                 r'Datastreams',
-                historicallocation.DataStreamView,
+                historicallocation.DatastreamView,
                 'datastream'
                 )
 

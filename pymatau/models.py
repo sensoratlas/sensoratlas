@@ -237,7 +237,7 @@ class Observation(models.Model):
     )
 
     Datastream = models.ForeignKey(
-        'DataStream',
+        'Datastream',
         on_delete=models.CASCADE,
         verbose_name='Datastream',
         related_name='Observations'

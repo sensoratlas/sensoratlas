@@ -17,7 +17,7 @@ class ObservedPropertyRouter:
 
     observedproperty_router.register(
                 r'Datastreams',
-                observedproperty.DataStreamView,
+                observedproperty.DatastreamView,
                 'datastream'
                 )
 

@@ -20,7 +20,7 @@ class ThingRouter:
                           'historicallocation')
 
     thing_router.register(r'Datastreams',
-                          thing.DataStreamView,
+                          thing.DatastreamView,
                           'datastream')
 
     thing_historical_router = NestedSimpleRouter(thing_router,

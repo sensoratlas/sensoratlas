@@ -155,7 +155,7 @@ class ThingSerializer(
         def get_expandable_fields(*args):
             expandable_fields = {
                 'Datastreams': (
-                    DataStreamSerializer,
+                    DatastreamSerializer,
                     (),
                     {'many': True}
                 ),
@@ -202,7 +202,7 @@ class SensorSerializer(
         def get_expandable_fields(*args):
             expandable_fields = {
                 'Datastream': (
-                    DataStreamSerializer,
+                    DatastreamSerializer,
                     (),
                     {'many': True}
                 )
@@ -239,7 +239,7 @@ class ObservedPropertySerializer(
         def get_expandable_fields(*args):
             expandable_fields = {
                 'Datastream': (
-                    DataStreamSerializer,
+                    DatastreamSerializer,
                     (),
                     {'many': True}
                 )
@@ -276,7 +276,7 @@ class ObservationSerializer(
 
         def get_expandable_fields(*args):
             expandable_fields = {
-                'Datastream': (DataStreamSerializer),
+                'Datastream': (DatastreamSerializer),
                 'FeatureOfInterest': (FeatureOfInterestSerializer),
             }
             Conflicts.conflicts.append('Observations')
@@ -288,7 +288,7 @@ class ObservationSerializer(
             return expandable_fields
 
 
-class DataStreamSerializer(
+class DatastreamSerializer(
         Select, Expand, DataArray, Representation,
         NavigationLinks, serializers.ModelSerializer):
     """
@@ -300,7 +300,7 @@ class DataStreamSerializer(
     sensorsLink = serializers.SerializerMethodField()
 
     class Meta:
-        model = DataStream
+        model = Datastream
         fields = (
             'id',
             'selfLink',

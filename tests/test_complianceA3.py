@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
-from pymatau.models import Thing, Location, DataStream, Sensor, \
+from pymatau.models import Thing, Location, Datastream, Sensor, \
     ObservedProperty, Observation, FeatureOfInterest, HistoricalLocation
 from django.contrib.gis.geos import Point, Polygon
 from django.urls import reverse
@@ -182,7 +182,7 @@ class A_3_1_1(APITestCase):
              }
         }
         response = self.client.post(url, data, format='json')
-        datastream = DataStream.objects.get(name="Air Temperature DS")
+        datastream = Datastream.objects.get(name="Air Temperature DS")
 
         url = reverse('featureofinterest-list',
                       kwargs={'version': 'v1.0'})
@@ -402,8 +402,8 @@ class A_3_1_1(APITestCase):
             response = self.client.post(url, data_missing, format='json')
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
             self.assertRaises(
-                              DataStream.DoesNotExist,
-                              DataStream.objects.get,
+                              Datastream.DoesNotExist,
+                              Datastream.objects.get,
                               name="Air Temperature DS"
                               )
             if field == 'Thing':
@@ -855,7 +855,7 @@ class A_3_1_1(APITestCase):
                              (50.0, 0.0),
                              (0.0, 0.0))
                             ))
-        datastream = DataStream.objects.create(
+        datastream = Datastream.objects.create(
             name='Chunt',
             description='Bing Bong',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
@@ -905,7 +905,7 @@ class A_3_1_1(APITestCase):
                              (50.0, 0.0),
                              (0.0, 0.0))
                             ))
-        datastream = DataStream.objects.create(
+        datastream = Datastream.objects.create(
             name='Chunt',
             description='Bing Bong',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
@@ -1143,8 +1143,8 @@ class A_3_1_1(APITestCase):
             response = self.client.post(url, data_missing, format='json')
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
             self.assertRaises(
-                              DataStream.DoesNotExist,
-                              DataStream.objects.get,
+                              Datastream.DoesNotExist,
+                              Datastream.objects.get,
                               name="Air Temperature DS"
                               )
             if field == 'Sensor':
@@ -1225,8 +1225,8 @@ class A_3_1_1(APITestCase):
             response = self.client.post(url, data_missing, format='json')
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
             self.assertRaises(
-                              DataStream.DoesNotExist,
-                              DataStream.objects.get,
+                              Datastream.DoesNotExist,
+                              Datastream.objects.get,
                               name="Air Temperature DS"
                               )
             if field == 'Thing':
@@ -1307,8 +1307,8 @@ class A_3_1_1(APITestCase):
             response = self.client.post(url, data_missing, format='json')
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
             self.assertRaises(
-                              DataStream.DoesNotExist,
-                              DataStream.objects.get,
+                              Datastream.DoesNotExist,
+                              Datastream.objects.get,
                               name="Air Temperature DS"
                               )
             if field == 'Thing':
@@ -1361,7 +1361,7 @@ class A_3_1_1(APITestCase):
                              (50.0, 0.0),
                              (0.0, 0.0))
                             ))
-        datastream = DataStream.objects.create(
+        datastream = Datastream.objects.create(
             name='Chunt',
             description='Bing Bong',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
@@ -1422,7 +1422,7 @@ class A_3_1_1(APITestCase):
                              (50.0, 0.0),
                              (0.0, 0.0))
                             ))
-        datastream = DataStream.objects.create(
+        datastream = Datastream.objects.create(
             name='Chunt',
             description='Bing Bong',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
@@ -1495,7 +1495,7 @@ class A_3_1_1(APITestCase):
             description='This is a thing'
             )
         thing.Locations.add(location)
-        datastream = DataStream.objects.create(
+        datastream = Datastream.objects.create(
             name='Chunt',
             description='Bing Bong',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
@@ -1571,7 +1571,7 @@ class A_3_1_1(APITestCase):
             name='Thing 1',
             description='This is a thing'
             )
-        datastream = DataStream.objects.create(
+        datastream = Datastream.objects.create(
             name='Chunt',
             description='Bing Bong',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",

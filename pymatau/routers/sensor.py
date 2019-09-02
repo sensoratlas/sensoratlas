@@ -17,7 +17,7 @@ class SensorRouter:
 
     sensor_router.register(
                 r'Datastreams',
-                sensor.DataStreamView,
+                sensor.DatastreamView,
                 'datastream'
                 )
 

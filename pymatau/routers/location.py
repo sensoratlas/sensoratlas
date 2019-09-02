@@ -35,7 +35,7 @@ class LocationRouter:
 
     location_things_router.register(
                 r'Datastreams',
-                location.DataStreamView,
+                location.DatastreamView,
                 'datastream'
                 )
 
@@ -96,7 +96,7 @@ class LocationRouter:
 
     location_hist_things_router.register(
                 r'Datastreams',
-                location.DataStreamView,
+                location.DatastreamView,
                 'datastream'
                 )
 

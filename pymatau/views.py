@@ -36,10 +36,10 @@ class HistoricalLocationView(Filter, PropertyPath.HistoricalLocation, ViewSet):
     ordering_fields = '__all__'
 
 
-class DataStreamView(Filter, PropertyPath.Datastream, ViewSet):
+class DatastreamView(Filter, PropertyPath.Datastream, ViewSet):
     """Provides a view set for the Datastreams entity"""
-    queryset = DataStream.objects.all()
-    serializer_class = serializers.DataStreamSerializer
+    queryset = Datastream.objects.all()
+    serializer_class = serializers.DatastreamSerializer
     filter_backends = (Orderby,)
     ordering_fields = '__all__'
 

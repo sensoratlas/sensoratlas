@@ -20,7 +20,7 @@ class FeatureOfInterestRouter:
                                                       'Observations')
 
     featureofinterest_obs_router.register(r'Datastream',
-                                          featureofinterest.DataStreamView,
+                                          featureofinterest.DatastreamView,
                                           'datastream')
 
     featureofinterest_obs_ds_router = NestedSimpleRouter(
