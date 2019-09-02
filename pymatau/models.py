@@ -74,14 +74,15 @@ class Location(models.Model):
     )
     encodingType = models.TextField(
         choices=ENCODING_TYPES_1,
+        default="application/vnd.geo+json",
         verbose_name="Encoding Type"
     )
     location = models.GeometryField(
     )
 
     class Meta:
-        verbose_name = _("Location")
-        verbose_name_plural = _("Locations")
+        verbose_name = "Location"
+        verbose_name_plural = "Locations"
 
     def __str__(self):
         return self.name
@@ -119,7 +120,8 @@ class Datastream(models.Model):
         )
     observationType = models.TextField(
         verbose_name="Observation Type",
-        choices=OBSERVATION_TYPES
+        choices=OBSERVATION_TYPES,
+        default="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Observation"
         )
     observedArea = models.PolygonField(
         blank=True,
@@ -177,7 +179,8 @@ class Sensor(models.Model):
     )
     encodingType = models.TextField(
         choices=ENCODING_TYPES_2,
-        verbose_name="Encoding Type"
+        verbose_name="Encoding Type",
+        default="application/pdf"
     )
     metadata = models.TextField(
         "Metadata"
@@ -272,6 +275,7 @@ class FeatureOfInterest(models.Model):
     )
     encodingType = models.TextField(
         choices=ENCODING_TYPES_1,
+        default="application/vnd.geo+json",
         verbose_name="Encoding Type"
     )
     feature = models.GeometryField(

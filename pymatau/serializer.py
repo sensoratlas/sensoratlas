@@ -8,7 +8,7 @@ from .errors import Conflicts
 
 
 class FeatureOfInterestSerializer(
-        Select, Expand, DataArray, Representation,
+        Select, Expand, ResultFormat, Representation,
         NavigationLinks, serializers.ModelSerializer
         ):
     """
@@ -47,7 +47,7 @@ class FeatureOfInterestSerializer(
 
 
 class HistoricalLocationSerializer(
-        Select, Expand, DataArray, Representation,
+        Select, Expand, ResultFormat, Representation,
         NavigationLinks, serializers.ModelSerializer
         ):
     """
@@ -86,7 +86,7 @@ class HistoricalLocationSerializer(
 
 
 class LocationSerializer(
-        Select,  Expand, DataArray, Representation,
+        Select,  Expand, ResultFormat, Representation,
         NavigationLinks, serializers.ModelSerializer):
     """
     Serializer for the nested Locations of the Datastreams entity.
@@ -130,7 +130,7 @@ class LocationSerializer(
 
 
 class ThingSerializer(
-        Select, Expand, DataArray, Representation,
+        Select, Expand, ResultFormat, Representation,
         NavigationLinks, serializers.ModelSerializer):
     """
     Serializer for the nested Things of the Datastreams entity.
@@ -180,7 +180,7 @@ class ThingSerializer(
 
 
 class SensorSerializer(
-        Select, Expand, DataArray, Representation,
+        Select, Expand, ResultFormat, Representation,
         NavigationLinks, serializers.ModelSerializer):
     """
     Serializer for the nested Sensors of the Datastreams entity.
@@ -217,7 +217,7 @@ class SensorSerializer(
 
 
 class ObservedPropertySerializer(
-        Select, Expand, DataArray, Representation,
+        Select, Expand, ResultFormat, Representation,
         NavigationLinks, serializers.ModelSerializer):
     """
     Serializer for the nested Observed Properties of the
@@ -254,7 +254,7 @@ class ObservedPropertySerializer(
 
 
 class ObservationSerializer(
-        Select, Expand, DataArray, Representation,
+        Select, Expand, ResultFormat, Representation,
         NavigationLinks, serializers.ModelSerializer):
     """
     Serializer for the nested Observations of the Datastreams entity.
@@ -289,7 +289,7 @@ class ObservationSerializer(
 
 
 class DatastreamSerializer(
-        Select, Expand, DataArray, Representation,
+        Select, Expand, ResultFormat, Representation,
         NavigationLinks, serializers.ModelSerializer):
     """
     Base serializer for the Datastreams entity.

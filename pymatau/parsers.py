@@ -228,7 +228,7 @@ def query_mapping(y, index):
                 operandB = func(parse_function[1], numbers=True)
 
             else:
-                func = Filter.QueryFunctions.implemented[parse_function[0]]
+                func = QueryFunctions.implemented[parse_function[0]]
             # return func(parse_function[1], index=index)
                 raise NotImplemented501()
 
@@ -252,21 +252,21 @@ def parser(string, queryset):
     Parses the lexicated list and applies the appropriate django
     filters. Returns a queryset.
     """
-    Filter.QueryCompiler.d = {}
-    Filter.QueryCompiler.b = []
-    Filter.QueryCompiler.ind = 0
-    Filter.QueryCompiler.temp_field = None
+    QueryObjects.D = {}
+    QueryObjects.B = []
+    QueryObjects.IND = 0
+    QueryObjects.TEMP_FIELD = None
 
     algebra = boolean.BooleanAlgebra()
-    query_list = Filter.QueryCompiler.lexer(string)
+    query_list = lexer(string)
     query_string = ' '.join(query_list)
     qs = algebra.parse(query_string)
 
-    if Filter.QueryCompiler.temp_field:
-        queryset = queryset.annotate(**Filter.QueryCompiler.temp_field)
-        Filter.QueryCompiler.temp_field = None
+    if QueryObjects.TEMP_FIELD:
+        queryset = queryset.annotate(**QueryObjects.TEMP_FIELD)
+        QueryObjects.TEMP_FIELD = None
 
-    locals().update(Filter.QueryCompiler.d.items())
+    locals().update(QueryObjects.D.items())
     query = str(qs)
     query = eval(query)
     queryset = queryset.filter(query)
@@ -342,7 +342,7 @@ class Filter(object):
         queryexpand = querydict.get('$expand', None)
         if queryfilter:
             try:
-                qs = Filter.QueryCompiler.parser(queryfilter, qs)
+                qs = parser(queryfilter, qs)
             except NotImplemented501:
                 raise NotImplemented501()
             except Unprocessable:
