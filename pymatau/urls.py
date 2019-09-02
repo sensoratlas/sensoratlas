@@ -1,13 +1,13 @@
 from django.urls import re_path, include
-from .routers.router import Router
-from .routers.location import LocationRouter
-from .routers.thing import ThingRouter
-from .routers.datastream import DatastreamRouter
-from .routers.historicallocation import HistoricalLocationRouter
-from .routers.sensor import SensorRouter
-from .routers.observedproperty import ObservedPropertyRouter
-from .routers.observation import ObservationRouter
-from .routers.featureofinterest import FeatureOfInterestRouter
+from pymatau.router import Router
+from .routers import LocationRouter
+from .routers import ThingRouter
+from .routers import DatastreamRouter
+from .routers import HistoricalLocationRouter
+from .routers import SensorRouter
+from .routers import ObservedPropertyRouter
+from .routers import ObservationRouter
+from .routers import FeatureOfInterestRouter
 
 
 urlpatterns = [
