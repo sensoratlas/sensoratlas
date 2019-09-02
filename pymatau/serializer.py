@@ -1,28 +1,24 @@
 from .models import Datastream, Thing, Sensor, Location, \
     ObservedProperty, Observation, HistoricalLocation, FeatureOfInterest
 from rest_framework import serializers
-from .mixins import Expand, Select, ResultFormat
-from .viewsets import NavigationLinks
-from .representation import Representation
+from .mixins import Expand, Select, ResultFormat, ControlInformation
 from .errors import Conflicts
 
 
-class FeatureOfInterestSerializer(
-        Select, Expand, ResultFormat, Representation,
-        NavigationLinks, serializers.ModelSerializer
-        ):
+class FeatureOfInterestSerializer(ControlInformation, Expand, ResultFormat, Select):
     """
     Serializer for the nested Features of Interest
     of the Datastreams entity.
     """
-    observationsLink = serializers.SerializerMethodField()
+    selfLink = serializers.SerializerMethodField()
+    navigationLinks = serializers.SerializerMethodField()
 
     class Meta:
         model = FeatureOfInterest
         fields = (
             'id',
             'selfLink',
-            'observationsLink',
+            'navigationLinks',
             'name',
             'description',
             'encodingType',
@@ -46,24 +42,20 @@ class FeatureOfInterestSerializer(
             return expandable_fields
 
 
-class HistoricalLocationSerializer(
-        Select, Expand, ResultFormat, Representation,
-        NavigationLinks, serializers.ModelSerializer
-        ):
+class HistoricalLocationSerializer(ControlInformation, Expand, ResultFormat, Select):
     """
     Serializer for the nested Historical Locations of the
     Datastreams entity.
     """
-    thingsLink = serializers.SerializerMethodField()
-    locationsLink = serializers.SerializerMethodField()
+    selfLink = serializers.SerializerMethodField()
+    navigationLinks = serializers.SerializerMethodField()
 
     class Meta:
         model = HistoricalLocation
         fields = (
             'id',
             'selfLink',
-            'thingsLink',
-            'locationsLink',
+            'navigationLinks',
             'time'
         )
 
@@ -85,22 +77,19 @@ class HistoricalLocationSerializer(
             return expandable_fields
 
 
-class LocationSerializer(
-        Select,  Expand, ResultFormat, Representation,
-        NavigationLinks, serializers.ModelSerializer):
+class LocationSerializer(ControlInformation, Expand, ResultFormat, Select):
     """
     Serializer for the nested Locations of the Datastreams entity.
     """
-    thingsLink = serializers.SerializerMethodField()
-    historicallocationsLink = serializers.SerializerMethodField()
+    selfLink = serializers.SerializerMethodField()
+    navigationLinks = serializers.SerializerMethodField()
 
     class Meta:
         model = Location
         fields = (
             'id',
             'selfLink',
-            'thingsLink',
-            'historicallocationsLink',
+            'navigationLinks',
             'name',
             'description',
             'encodingType',
@@ -129,24 +118,19 @@ class LocationSerializer(
             return expandable_fields
 
 
-class ThingSerializer(
-        Select, Expand, ResultFormat, Representation,
-        NavigationLinks, serializers.ModelSerializer):
+class ThingSerializer(ControlInformation, Expand, ResultFormat, Select):
     """
     Serializer for the nested Things of the Datastreams entity.
     """
-    datastreamsLink = serializers.SerializerMethodField()
-    locationsLink = serializers.SerializerMethodField()
-    historicallocationsLink = serializers.SerializerMethodField()
+    selfLink = serializers.SerializerMethodField()
+    navigationLinks = serializers.SerializerMethodField()
 
     class Meta:
         model = Thing
         fields = (
             'id',
             'selfLink',
-            'datastreamsLink',
-            'locationsLink',
-            'historicallocationsLink',
+            'navigationLinks',
             'name',
             'description',
             'properties'
@@ -179,20 +163,19 @@ class ThingSerializer(
             return expandable_fields
 
 
-class SensorSerializer(
-        Select, Expand, ResultFormat, Representation,
-        NavigationLinks, serializers.ModelSerializer):
+class SensorSerializer(ControlInformation, Expand, ResultFormat, Select):
     """
     Serializer for the nested Sensors of the Datastreams entity.
     """
-    datastreamsLink = serializers.SerializerMethodField()
+    selfLink = serializers.SerializerMethodField()
+    navigationLinks = serializers.SerializerMethodField()
 
     class Meta:
         model = Sensor
         fields = (
             'id',
             'selfLink',
-            'datastreamsLink',
+            'navigationLinks',
             'name',
             'description',
             'encodingType',
@@ -216,21 +199,20 @@ class SensorSerializer(
             return expandable_fields
 
 
-class ObservedPropertySerializer(
-        Select, Expand, ResultFormat, Representation,
-        NavigationLinks, serializers.ModelSerializer):
+class ObservedPropertySerializer(ControlInformation, Expand, ResultFormat, Select):
     """
     Serializer for the nested Observed Properties of the
     Datastreams entity.
     """
-    datastreamsLink = serializers.SerializerMethodField()
+    selfLink = serializers.SerializerMethodField()
+    navigationLinks = serializers.SerializerMethodField()
 
     class Meta:
         model = ObservedProperty
         fields = (
             'id',
             'selfLink',
-            'datastreamsLink',
+            'navigationLinks',
             'name',
             'definition',
             'description'
@@ -253,22 +235,19 @@ class ObservedPropertySerializer(
             return expandable_fields
 
 
-class ObservationSerializer(
-        Select, Expand, ResultFormat, Representation,
-        NavigationLinks, serializers.ModelSerializer):
+class ObservationSerializer(ControlInformation, Expand, ResultFormat, Select):
     """
     Serializer for the nested Observations of the Datastreams entity.
     """
-    datastreamsLink = serializers.SerializerMethodField()
-    featuresOfInterestLink = serializers.SerializerMethodField()
+    selfLink = serializers.SerializerMethodField()
+    navigationLinks = serializers.SerializerMethodField()
 
     class Meta:
         model = Observation
         fields = (
             'id',
             'selfLink',
-            'datastreamsLink',
-            'featuresOfInterestLink',
+            'navigationLinks',
             'phenomenonTime',
             'result',
             'resultTime'
@@ -288,26 +267,19 @@ class ObservationSerializer(
             return expandable_fields
 
 
-class DatastreamSerializer(
-        Select, Expand, ResultFormat, Representation,
-        NavigationLinks, serializers.ModelSerializer):
+class DatastreamSerializer(ControlInformation, Expand, ResultFormat, Select):
     """
     Base serializer for the Datastreams entity.
     """
-    thingsLink = serializers.SerializerMethodField()
-    observationsLink = serializers.SerializerMethodField()
-    observedpropertiesLink = serializers.SerializerMethodField()
-    sensorsLink = serializers.SerializerMethodField()
+    selfLink = serializers.SerializerMethodField()
+    navigationLinks = serializers.SerializerMethodField()
 
     class Meta:
         model = Datastream
         fields = (
             'id',
             'selfLink',
-            'thingsLink',
-            'observationsLink',
-            'observedpropertiesLink',
-            'sensorsLink',
+            'navigationLinks',
             'name',
             'description',
             'unitOfMeasurement',

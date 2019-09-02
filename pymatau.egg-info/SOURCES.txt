@@ -10,7 +10,6 @@ pymatau/mixins.py
 pymatau/models.py
 pymatau/pagination.py
 pymatau/parsers.py
-pymatau/representation.py
 pymatau/router.py
 pymatau/routers.py
 pymatau/serializer.py

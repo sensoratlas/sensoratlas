@@ -4,6 +4,131 @@ from rest_framework import serializers
 from .utils import dict_from_qs, qs_from_dict
 from .errors import Conflicts, NotImplemented501
 from .parsers import CustomParser
+from rest_framework.reverse import reverse
+import json
+
+
+class ControlInformation:
+    keys = {
+        "Thing": [
+            "thing",
+            "Things_pk",
+            [
+                {'datastream': 'Datastreams'},
+                {'location': 'Locations'},
+                {'historicallocation': 'HistoricalLocations'}
+            ]
+        ],
+        "Location": [
+            "location",
+            "Locations_pk",
+            [
+                {'thing': 'Things'},
+                {'historicallocation': 'HistoricalLocations'}
+            ]
+        ],
+        "HistoricalLocation": [
+            "historicallocation",
+            "HistoricalLocations_pk",
+            [
+                {"thing": "Things"},
+                {'location': 'Locations'}
+            ]
+        ],
+        "Datastream": [
+            "datastream",
+            "Datastreams_pk",
+            [
+                {'sensor': "Senors"},
+                {'observedproperty': "ObservedProperties"},
+                {'thing': "Things"},
+                {"observation": "Observations"}
+            ]
+        ],
+        "Sensor": [
+            "sensor",
+            "Sensors_pk",
+            [
+                {"datastream": 'Datastreams'}
+            ]
+        ],
+        "ObservedProperty": [
+            "observedproperty",
+            "ObservedProperties_pk",
+            [
+                {"datastream": 'Datastreams'}
+            ]
+        ],
+        "Observation": [
+            "observation",
+            "Observations_pk",
+            [
+                {"datastream": 'Datastreams'},
+                {"featureofinterest": 'FeaturesOfInterest'}
+            ]
+        ],
+        "FeatureOfInterest": [
+            "featureofinrest",
+            "FeaturesOfInterest_pk",
+            [
+                {"observation": "Observations"}
+            ]
+        ]
+    }
+
+    def get_selfLink(self, obj):
+        request = self.context.get('request')
+        model = self.Meta.model.__name__
+        return request.build_absolute_uri(
+                    reverse(ControlInformation.keys[model][0] + '-detail',
+                            kwargs={'pk': obj.id,
+                                    "version": "v1.0"
+                                    }
+                            )
+                    )
+
+
+    def get_navigationLinks(self, obj):
+        request = self.context.get('request')
+        model = self.Meta.model.__name__
+        nav_links = {}
+        model_kwarg = ControlInformation.keys[model][1]
+        for related_entity in ControlInformation.keys[model][2]:
+            nav_links[list(related_entity.values())[0] + '@iot.navigationLink'] = request.build_absolute_uri(
+                    reverse(list(related_entity.keys())[0] + '-list',
+                            kwargs={model_kwarg: obj.id,
+                                    "version": "v1.0"
+                                    }
+                            )
+                    )
+        return nav_links
+
+
+    def to_representation(self, obj):
+
+        data = super(ControlInformation, self).to_representation(obj)
+
+        data['@iot.id'] = data['id']
+        data.pop('id')
+        data['@iot.selfLink'] = data['selfLink']
+        data.pop('selfLink')
+        data.move_to_end('@iot.selfLink', last=False)
+        data.move_to_end('@iot.id', last=False)
+
+        for navigation_key, navigation_value in data['navigationLinks'].items():
+            data[navigation_key] = navigation_value
+        data.pop('navigationLinks')
+
+        if 'observedArea' in data:
+            if obj.observedArea:
+                data['observedArea'] = json.loads(obj.observedArea.geojson)
+        if 'feature' in data:
+            if obj.feature:
+                data['feature'] = json.loads(obj.feature.geojson)
+        if 'location' in data:
+            if obj.location:
+                data['location'] = json.loads(obj.location.geojson)
+        return data
 
 
 class Expand(ExpanderSerializerMixin):
