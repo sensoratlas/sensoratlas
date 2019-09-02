@@ -1,2 +1,2 @@
 # app config
-default_app_config = 'pymatau.apps.SensorAppConfig'
+default_app_config = 'pymatau.apps.PyMatauConfig'

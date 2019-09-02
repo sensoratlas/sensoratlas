@@ -1,7 +1,7 @@
-from .models import DataStream, Thing, Sensor, Location, \
+from .models import Datastream, Thing, Sensor, Location, \
     ObservedProperty, Observation, HistoricalLocation, FeatureOfInterest
 from rest_framework import serializers
-from .query_options import Expand, Select, DataArray
+from .mixins import Expand, Select, ResultFormat
 from .viewsets import NavigationLinks
 from .representation import Representation
 from .errors import Conflicts
