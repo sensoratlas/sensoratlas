@@ -1137,6 +1137,7 @@ class ViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
+        # TODO: in POST of anything with a time, I think timezones are ignored. Need to test.
         """
         Override the create method to allow related entity creation.
         """
@@ -1156,47 +1157,18 @@ class ViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=processed_data)
         if serializer.is_valid(raise_exception=True):
             d = ViewSet.get_or_create_related(
-                    processed_data,
-                    basename,
-                    serializer
-                    )
+                processed_data,
+                basename,
+                serializer
+            )
             if d:
                 serializer.save(**d)
             else:
                 self.perform_create(serializer)
-        # It is tricky when the response is for observations
-        # when it is observations, the serializer doesnt make the id pr create
-        # a self link. Instead, the id is managed by pipelinedb. So, guess it:
-        basename = self.basename
-        if basename == 'observation':
-            test = Observation.objects.last()
-            if test:
-                url = request.build_absolute_uri(reverse(
-                        'observation-detail',
-                        kwargs={
-                            'version': 'v1.0',
-                            'pk': test.id + 1
-                        }
-                    )
-                )
-            else:
-                url = request.build_absolute_uri(reverse(
-                        'observation-detail',
-                        kwargs={
-                            'version': 'v1.0',
-                            'pk': 1
-                        }
-                    )
-                )
-            response = Response(
-                                {"Location": url},
-                                status=status.HTTP_201_CREATED
-                                )
-        else:
-            response = Response(
-                            {"Location": serializer.data['@iot.selfLink']},
-                            status=status.HTTP_201_CREATED
-                            )
+        response = Response(
+                        {"Location": serializer.data['@iot.selfLink']},
+                        status=status.HTTP_201_CREATED
+                        )
         return response
 
     def update(self, request, *args, **kwargs):

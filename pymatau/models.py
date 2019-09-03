@@ -48,7 +48,6 @@ class Thing(models.Model):
     Locations = models.ManyToManyField(
         "Location",
         blank=True,
-        null=True,
         related_name="Things",
         verbose_name="location"
     )
@@ -221,7 +220,8 @@ class Observation(models.Model):
         verbose_name="Result"
     )
     resultTime = models.DateTimeField(
-        verbose_name="Result Time"
+        verbose_name="Result Time",
+        null=True  # although it is a mandatory field, there is a special case that allows for null values.
     )
     resultQuality = JSONField(
         null=True,

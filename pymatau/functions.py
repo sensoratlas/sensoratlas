@@ -247,6 +247,7 @@ class QueryFunctions:
         return d
 
     def time(parameterstring, **kwargs):
+        # TODO: this only looks up aware times in a query if the django settings timezone matches the query one.
         django_function = '__time'
         field = parameterstring
         if field == 'result':

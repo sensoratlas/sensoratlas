@@ -329,7 +329,6 @@ class A_2_1_2(APITestCase):
         thing = Thing.objects.create(
             name='Thing 1',
             description='This is a thing',
-            # Locations=Location.objects.get(name='Location 1'),
             properties={}
             )
         thing.Locations.add(location)
@@ -441,8 +440,8 @@ class A_2_1_2(APITestCase):
         self.assertEqual(len(response.data['value']), 1)
         self.assertEqual(len(response.data['value'][0]['Datastreams']), 2)
         self.assertEqual(len(response.data['value'][0]['Datastreams'][0]), 13)
-        self.assertEqual(response.data['value'][0]['Datastreams'][0]['name'], 'Spintax')
-        self.assertEqual(response.data['value'][0]['Datastreams'][1]['name'], 'Chunt')
+        self.assertEqual(response.data['value'][0]['Datastreams'][0]['name'], 'Chunt')
+        self.assertEqual(response.data['value'][0]['Datastreams'][1]['name'], 'Spintax')
 
     def test_expand_thing2(self):
         query = '$expand=Locations'
@@ -492,9 +491,9 @@ class A_2_1_2(APITestCase):
         self.assertEqual(len(response.data['value']), 1)
         self.assertEqual(len(response.data['value'][0]['Datastreams']), 2)
         self.assertEqual(len(response.data['value'][0]['Datastreams'][0]), 14)
-        self.assertEqual(response.data['value'][0]['Datastreams'][0]['name'], 'Spintax')
+        self.assertEqual(response.data['value'][0]['Datastreams'][0]['name'], 'Chunt')
         self.assertEqual(len(response.data['value'][0]['Datastreams'][0]['Sensor']), 7)
-        self.assertEqual(response.data['value'][0]['Datastreams'][0]['Sensor']['name'], 'Lie Detector')
+        self.assertEqual(response.data['value'][0]['Datastreams'][0]['Sensor']['name'], 'Temperature Sensor')
 
     def test_expand2(self):
         query = '$expand=Datastreams,Locations'
@@ -503,8 +502,8 @@ class A_2_1_2(APITestCase):
         self.assertEqual(len(response.data['value']), 1)
         self.assertEqual(len(response.data['value'][0]['Datastreams']), 2)
         self.assertEqual(len(response.data['value'][0]['Datastreams'][0]), 13)
-        self.assertEqual(response.data['value'][0]['Datastreams'][0]['name'], 'Spintax')
-        self.assertEqual(response.data['value'][0]['Datastreams'][1]['name'], 'Chunt')
+        self.assertEqual(response.data['value'][0]['Datastreams'][0]['name'], 'Chunt')
+        self.assertEqual(response.data['value'][0]['Datastreams'][1]['name'], 'Spintax')
         self.assertEqual(len(response.data['value'][0]['Locations'][0]), 8)
         self.assertEqual(response.data['value'][0]['Locations'][0]['name'], 'Location 1')
 
@@ -517,9 +516,9 @@ class A_2_1_2(APITestCase):
                                    query)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['value']), 2)
-        self.assertEqual(len(response.data['value'][0]['Observations']), 4)
-        self.assertEqual(len(response.data['value'][1]['Observations']), 6)
-        self.assertEqual(response.data['value'][0]['Observations'][0]['result'], 'Lie')
+        self.assertEqual(len(response.data['value'][0]['Observations']), 6)
+        self.assertEqual(len(response.data['value'][1]['Observations']), 4)
+        self.assertEqual(response.data['value'][0]['Observations'][0]['result'], 42)
 
     def test_select1(self):
         query = '$select=name'
@@ -1265,70 +1264,70 @@ class A_2_1_6(APITestCase):
             ObservedProperty=ObservedProperty.objects.get(name='Truth')
             )
         Observation.objects.create(
-            phenomenonTime="2019-03-24 04:00:00+0900",
+            phenomenonTime="2019-03-24T04:00:00Z",
             result=42,
             Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime=timezone.now().strftime("%Y-%m-%d %H:%M:%S%z"),
             )
         Observation.objects.create(
-            phenomenonTime="2019-03-24 04:01:00+0900",
+            phenomenonTime="2019-03-24T04:01:00Z",
             result=3,
             Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime=timezone.now().strftime("%Y-%m-%d %H:%M:%S%z"),
             )
         Observation.objects.create(
-            phenomenonTime="2019-03-24 04:02:00+0900",
+            phenomenonTime="2019-03-24T04:02:00Z",
             result=15.7,
             Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime=timezone.now().strftime("%Y-%m-%d %H:%M:%S%z"),
             )
         Observation.objects.create(
-            phenomenonTime="2019-03-24 04:03:00+0900",
+            phenomenonTime="2019-03-24T04:03:00Z",
             result=23,
             Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime=timezone.now().strftime("%Y-%m-%d %H:%M:%S%z"),
             )
         Observation.objects.create(
-            phenomenonTime="2019-03-24 04:04:00+0900",
+            phenomenonTime="2019-03-24T04:04:00Z",
             result=1,
             Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime=timezone.now().strftime("%Y-%m-%d %H:%M:%S%z"),
             )
         Observation.objects.create(
-            phenomenonTime="2019-03-24 04:05:00+0900",
+            phenomenonTime="2019-03-24T04:05:00Z",
             result=35,
             Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime=timezone.now().strftime("%Y-%m-%d %H:%M:%S%z"),
             )
         Observation.objects.create(
-            phenomenonTime="2019-03-24 04:00:00+0900",
+            phenomenonTime="2019-03-24T04:00:00Z",
             result='Lie',
             Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime=timezone.now().strftime("%Y-%m-%d %H:%M:%S%z"),
             )
         Observation.objects.create(
-            phenomenonTime="2019-03-24 04:01:00+0900",
+            phenomenonTime="2019-03-24T04:01:00Z",
             result='Truth',
             Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime=timezone.now().strftime("%Y-%m-%d %H:%M:%S%z"),
             )
         Observation.objects.create(
-            phenomenonTime="2019-03-24 04:02:00+0900",
+            phenomenonTime="2019-03-24T04:02:00Z",
             result='Truth',
             Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime=timezone.now().strftime("%Y-%m-%d %H:%M:%S%z"),
             )
         Observation.objects.create(
-            phenomenonTime="2019-03-24 04:03:00+0900",
+            phenomenonTime="2019-03-24T04:03:00Z",
             result='Truth',
             Datastream=Datastream.objects.get(name="Spintax"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
@@ -1423,7 +1422,7 @@ class A_2_1_6(APITestCase):
         self.assertEqual(response.data['value'][0]['result'], 3)
 
     def test_filter_operations_and1(self):
-        query = "$filter=phenomenonTime ge '2019-03-24 04:02:00+0900' and result eq 'Truth'"
+        query = "$filter=phenomenonTime ge '2019-03-24 04:02:00Z' and result eq 'Truth'"
         response = self.client.get("/api/v1.0/Observations?" + query)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['value']), 2)
@@ -1436,7 +1435,7 @@ class A_2_1_6(APITestCase):
         self.assertFalse(response.data['value'])
 
     def test_filter_operations_and3(self):
-        query = "$filter=id ge 1 and result eq 'Truth' and phenomenonTime eq '2019-03-24 04:03:00+0900'"
+        query = "$filter=id ge 1 and result eq 'Truth' and phenomenonTime eq '2019-03-24 04:03:00Z'"
         response = self.client.get("/api/v1.0/Observations?" + query)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['value']), 1)
@@ -1507,7 +1506,7 @@ class A_2_1_6(APITestCase):
         self.assertEqual(response.data['value'][0]['result'], 3)
 
     def test_filter_operations_not7(self):
-        query = "$filter=not (result eq Truth or result ne 35) and id eq 1 or phenomenonTime eq '2019-03-24 04:00:00+0900'"
+        query = "$filter=not (result eq Truth or result ne 35) and id eq 1 or phenomenonTime eq '2019-03-24 04:00:00Z'"
         response = self.client.get("/api/v1.0/Observations?" + query)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['value']), 2)
@@ -1732,10 +1731,9 @@ class A_2_1_6(APITestCase):
         self.assertEqual(response.data['value'][0]['result'], 42)
 
     def test_filter_functions_time1(self):
-        query = "time(phenomenonTime) eq 04:05:00+0900"
+        query = "time(phenomenonTime) eq 04:05:00Z"
         response = self.client.get("/api/v1.0/Observations?$filter=" + query)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        print("RESPONSE: ", response)
         self.assertGreaterEqual(len(response.data['value']), 1)
         self.assertEqual(response.data['value'][0]['result'], 35)
 

@@ -68,7 +68,7 @@ class ControlInformation:
             ]
         ],
         "FeatureOfInterest": [
-            "featureofinrest",
+            "featureofinterest",
             "FeaturesOfInterest_pk",
             [
                 {"observation": "Observations"}
@@ -87,7 +87,6 @@ class ControlInformation:
                             )
                     )
 
-
     def get_navigationLinks(self, obj):
         request = self.context.get('request')
         model = self.Meta.model.__name__
@@ -105,19 +104,31 @@ class ControlInformation:
 
 
     def to_representation(self, obj):
-
+        """
+        doc string here
+        :param obj:
+        :return:
+        """
         data = super(ControlInformation, self).to_representation(obj)
+        try:
+            data['@iot.selfLink'] = data['selfLink']
+            data.pop('selfLink')
+            data.move_to_end('@iot.selfLink', last=False)
+        except KeyError:
+            pass
+        try:
+            data['@iot.id'] = data['id']
+            data.pop('id')
+            data.move_to_end('@iot.id', last=False)
+        except KeyError:
+            pass
 
-        data['@iot.id'] = data['id']
-        data.pop('id')
-        data['@iot.selfLink'] = data['selfLink']
-        data.pop('selfLink')
-        data.move_to_end('@iot.selfLink', last=False)
-        data.move_to_end('@iot.id', last=False)
-
-        for navigation_key, navigation_value in data['navigationLinks'].items():
-            data[navigation_key] = navigation_value
-        data.pop('navigationLinks')
+        try:
+            for navigation_key, navigation_value in data['navigationLinks'].items():
+                data[navigation_key] = navigation_value
+            data.pop('navigationLinks')
+        except KeyError:
+            pass
 
         if 'observedArea' in data:
             if obj.observedArea:
@@ -128,6 +139,8 @@ class ControlInformation:
         if 'location' in data:
             if obj.location:
                 data['location'] = json.loads(obj.location.geojson)
+        if 'result' in data:
+            data['result'] = obj.result['result']
         return data
 
 

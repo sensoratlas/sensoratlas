@@ -5,7 +5,7 @@ from .mixins import Expand, Select, ResultFormat, ControlInformation
 from .errors import Conflicts
 
 
-class FeatureOfInterestSerializer(ControlInformation, Expand, ResultFormat, Select):
+class FeatureOfInterestSerializer(ControlInformation, Select, Expand, ResultFormat, serializers.ModelSerializer):
     """
     Serializer for the nested Features of Interest
     of the Datastreams entity.
@@ -42,7 +42,7 @@ class FeatureOfInterestSerializer(ControlInformation, Expand, ResultFormat, Sele
             return expandable_fields
 
 
-class HistoricalLocationSerializer(ControlInformation, Expand, ResultFormat, Select):
+class HistoricalLocationSerializer(ControlInformation, Select, Expand, ResultFormat, serializers.ModelSerializer):
     """
     Serializer for the nested Historical Locations of the
     Datastreams entity.
@@ -77,7 +77,7 @@ class HistoricalLocationSerializer(ControlInformation, Expand, ResultFormat, Sel
             return expandable_fields
 
 
-class LocationSerializer(ControlInformation, Expand, ResultFormat, Select):
+class LocationSerializer(ControlInformation, Select, Expand, ResultFormat, serializers.ModelSerializer):
     """
     Serializer for the nested Locations of the Datastreams entity.
     """
@@ -118,7 +118,7 @@ class LocationSerializer(ControlInformation, Expand, ResultFormat, Select):
             return expandable_fields
 
 
-class ThingSerializer(ControlInformation, Expand, ResultFormat, Select):
+class ThingSerializer(ControlInformation, Select, Expand, ResultFormat, serializers.ModelSerializer):
     """
     Serializer for the nested Things of the Datastreams entity.
     """
@@ -163,7 +163,7 @@ class ThingSerializer(ControlInformation, Expand, ResultFormat, Select):
             return expandable_fields
 
 
-class SensorSerializer(ControlInformation, Expand, ResultFormat, Select):
+class SensorSerializer(ControlInformation, Select, Expand, ResultFormat, serializers.ModelSerializer):
     """
     Serializer for the nested Sensors of the Datastreams entity.
     """
@@ -199,7 +199,7 @@ class SensorSerializer(ControlInformation, Expand, ResultFormat, Select):
             return expandable_fields
 
 
-class ObservedPropertySerializer(ControlInformation, Expand, ResultFormat, Select):
+class ObservedPropertySerializer(ControlInformation, Select, Expand, ResultFormat, serializers.ModelSerializer):
     """
     Serializer for the nested Observed Properties of the
     Datastreams entity.
@@ -235,7 +235,7 @@ class ObservedPropertySerializer(ControlInformation, Expand, ResultFormat, Selec
             return expandable_fields
 
 
-class ObservationSerializer(ControlInformation, Expand, ResultFormat, Select):
+class ObservationSerializer(ControlInformation, Select, Expand, ResultFormat, serializers.ModelSerializer):
     """
     Serializer for the nested Observations of the Datastreams entity.
     """
@@ -267,7 +267,7 @@ class ObservationSerializer(ControlInformation, Expand, ResultFormat, Select):
             return expandable_fields
 
 
-class DatastreamSerializer(ControlInformation, Expand, ResultFormat, Select):
+class DatastreamSerializer(ControlInformation, Select, Expand, ResultFormat, serializers.ModelSerializer):
     """
     Base serializer for the Datastreams entity.
     """

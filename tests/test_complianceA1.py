@@ -18,60 +18,66 @@ class A_1_1(APITestCase):
         """
         Create test resources
         """
-        observed_property = ObservedProperty.objects.create(
-            name='Temperature',
-            definition='https://wikipedia.org',
-            description='This is a test'
-            )
-        sensor = Sensor.objects.create(
-            name='Temperature Sensor',
-            description='This is a sensor test',
-            encodingType='PDF',
-            metadata='This is some very descriptive metadata.'
-            )
-        location = Location.objects.create(
-            name='Location 1',
-            description='This is a sensor test',
-            encodingType='application/vnd.geo+json',
-            location=Point(954158.1, 4215137.1, srid=32140)
-            )
-        thing = Thing.objects.create(
-            name='Thing 1',
-            description='This is a thing',
-            properties={}
-            )
-        historicallocation = HistoricalLocation.objects.create(
-            time=timezone.now(),
-            Thing=thing
-        )
-        historicallocation.Locations.add(location)
-        featureofinterest = FeatureOfInterest.objects.create(
-            name='Usidore',
-            description='this is a place',
-            encodingType='application/vnd.geo+json',
-            feature=Polygon(((0.0, 0.0),
-                             (0.0, 50.0),
-                             (50.0, 50.0),
-                             (50.0, 0.0),
-                             (0.0, 0.0))
-                            ))
-        datastream = Datastream.objects.create(
-            name='Chunt',
-            description='Bing Bong',
-            observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
-            unitOfMeasurement={"Race": "Badger",
-                               "Class": "Shapeshifter"},
-            Thing=Thing.objects.get(name='Thing 1'),
-            Sensor=sensor,
-            ObservedProperty=observed_property
-            )
-        Observation.objects.create(
-            phenomenonTime="2017-02-07T18:02:00.000Z",
-            result=42,
-            Datastream=datastream,
-            FeatureOfInterest=featureofinterest,
-            resultTime="2017-02-07T18:02:00.000Z",
-            )
+        url = reverse('observation-list', kwargs={'version': 'v1.0'})
+        data = {
+            "phenomenonTime": "2017-02-07T18:02:00.000Z",
+            "resultTime": "2017-02-07T18:02:05.000Z",
+            "result": 21.6,
+            "Datastream": {
+                "name": "Air Temperature DS",
+                "description": "Datastream for recording temperature",
+                "observationType": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+                "unitOfMeasurement": {
+                    "name": "Degree Celsius",
+                    "symbol": "degC",
+                    "definition": "http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#DegreeCelsius"
+                },
+                "ObservedProperty": {
+                    "name": "Area Temperature",
+                    "description": "The degree or intensity of heat present in the area",
+                    "definition": "http://www.qudt.org/qudt/owl/1.0.0/quantity/Instances.html#AreaTemperature"
+                },
+                "Sensor": {
+                    "name": "DHT22",
+                    "description": "DHT22 temperature sensor",
+                    "encodingType": "application/pdf",
+                    "metadata": "https://cdn-shop.adafruit.com/datasheets/DHT22.pdf"
+                },
+                "Thing": {
+                    "name": "Temperature Monitoring System",
+                    "description": "Sensor system monitoring area temperature",
+                    "properties": {
+                        "Deployment Condition": "Deployed in a third floor balcony",
+                        "Case Used": "Radiation shield"
+                    },
+                    "Locations": [
+                        {
+                            "name": "UofC CCIT",
+                            "description": "University of Calgary, CCIT building",
+                            "encodingType": "application/vnd.geo+json",
+                            "location": {
+                                "type": "Point",
+                                "coordinates": [-114.133, 51.08]
+                            }
+                        }
+                    ]
+                }
+            },
+            "FeatureOfInterest": {
+                "name": "UofC CCIT",
+                "description": "University of Calgary, CCIT building",
+                "encodingType": "application/vnd.geo+json",
+                "feature": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]
+                        ]
+                    ]
+                }
+            }
+        }
+        self.client.post(url, data, format='json')
 
     def test_requirement1(self):
         urls = [
