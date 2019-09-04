@@ -10,659 +10,260 @@ from django.contrib.gis.geos import GEOSGeometry
 from rest_framework import status
 from .errors import Unprocessable, BadRequest
 import dateutil.parser
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, FieldError
+from django.apps import apps
 
 
-class PostRelations(object):
+MODEL_KEYS = {
+    "Thing": "Thing",
+    "Things": "Thing",
+    "Location": "Location",
+    "Locations": "Location",
+    "HistoricalLocation": "HistoricalLocation",
+    "HistoricalLocations": "HistoricalLocation",
+    "Datastream": "Datastream",
+    "Datastreams": "Datastream",
+    "Sensor": "Sensor",
+    "Sensors": "Sensor",
+    "ObservedProperty": "ObservedProperty",
+    "ObservedProperties": "ObservedProperty",
+    "Observation": "Observation",
+    "Observations": "Observation",
+    "FeatureOfInterest": "FeatureOfInterest",
+    "FeaturesOfInterest": "FeatureOfInterest"
+}
+DEFAULT_ENCODING = "application/vnd.geo+json"
+NAME_LOOKUP = {
+    'thing': 'Things',
+    'historicallocation': 'HistoricalLocations',
+    'location': 'Locations',
+    'datastream': 'Datastreams',
+    'sensor': 'Sensors',
+    'observedproperty': 'ObservedProperties',
+    'observation': 'Observations',
+    'featureofinterest': 'FeaturesOfInterest'
+}
+INDICES = {
+    'HistoricalLocations': 'historicallocation_index',
+    'Locations': 'location_index',
+    'Things': 'thing_index',
+    'Thing': 'thing_index',
+    'Datastreams': 'datastream_index',
+    'Datastream': 'datastream_index',
+    'ObservedProperties': 'observedproperty_index',
+    'ObservedProperty': 'observedproperty_index',
+    'Sensors': 'sensor_index',
+    'Sensor': 'sensor_index',
+    'Observations': 'observation_index',
+    'FeaturesOfInterest': 'featureofinterest_index',
+    'FeatureOfInterest': 'featureofinterest_index'
+}
+REQUIRED_FIELDS = {
+    'historicallocation': [
+        'time',
+        'Thing',
+        'Locations'
+    ],
+    'location': [
+        'name',
+        'description',
+        'encodingType',
+        'location'
+    ],
+    'thing': [
+        'name',
+        'description'
+    ],
+    'datastream': [
+        'name',
+        'description',
+        'unitOfMeasurement',
+        'observationType',
+        'Thing',
+        'ObservedProperty',
+        'Sensor'
+    ],
+    'sensor': [
+        'name',
+        'description',
+        'encodingType',
+        'metadata'
+    ],
+    'observedproperty': [
+        'name',
+        'definition',
+        'description'
+    ],
+    'observation': [
+        'result',
+        'Datastream',
+        'FeatureOfInterest'
+    ],
+    'featureofinterest': [
+        'name',
+        'description',
+        'encodingType',
+        'feature'
+    ]
+}
+
+
+def geojson_to_geos(data):
     """
-    Gets or creates nested entities given either entity details or entity id.
+    Checks to see if either location, feature, or observedArea are in json
+    object and if they are, and are a dictionary, convert geojson geometery
+    to geos geometry.
     """
-    def get_or_update_sensor(data):
-        # should test if data is json dictionary
+    geometries = ['location', 'feature', 'observedArea']
+    for geometry in geometries:
         try:
-            id = data["@iot.id"]
-            try:
-                sensor = Sensor.objects.get(id=id)
-                return sensor
-            except Sensor.DoesNotExist:
-                return
+            if isinstance(data[geometry], dict):
+                data[geometry] = GEOSGeometry(str(data[geometry]))
+        except KeyError:
+            pass
+    return data
+
+
+def parse_interval_time(data):
+    interval_times = ['phenomenonTime', 'resultTime', 'validTime']
+    for time_obj in interval_times:
+        try:
+            for time in data[time_obj].split("/"):
+                try:
+                    dateutil.parser.parse(time)
+                except ValueError:
+                    raise Unprocessable()
+        except KeyError:
+            pass
+    return data
+
+
+def process_data(data, basename, kwargs):
+    data = NestedViewSet.relate_parent(data, basename, kwargs)
+    data = geojson_to_geos(data)
+    data = parse_interval_time(data)
+    if basename == 'observation':
+        try:
+            result = data['result']
+            data['result'] = {'result': result}
+            return data
         except KeyError:
             raise BadRequest()
+    return data
 
-    def get_or_update_observedproperty(data):
-        # should test if data is json dictionary
-        try:
-            id = data["@iot.id"]
-            try:
-                observedproperty = ObservedProperty.objects.get(id=id)
-                return observedproperty
-            except ObservedProperty.DoesNotExist:
-                return
-        except KeyError:
-            raise BadRequest()
 
-    def get_or_update_datastream(data):
-        """
-        Creates (or gets if exists) a single Datastream object. Can only be
-        called by an Observation entity create request.
-        """
-        # should test if data is json dictionary
-        try:
-            id = data["@iot.id"]
-            try:
-                datastream = Datastream.objects.get(id=id)
-                return datastream
-            except Datastream.DoesNotExist:
-                return
-        except KeyError:
-            raise BadRequest()
+class NestedViewSet:
+    def __init__(self, data):
+        self.data = data
 
-    def get_or_update_featureofinterest(data):
-        # should test if data is json dictionary
-        try:
-            id = data["@iot.id"]
-            try:
-                featureofinterest = FeatureOfInterest.objects.get(id=id)
-                return featureofinterest
-            except FeatureOfInterest.DoesNotExist:
-                return
-        except KeyError:
-            raise BadRequest()
+    def get_or_create_children(self, data, given_entity, **kwargs):
+        entity = MODEL_KEYS[given_entity]
+        model = apps.get_model('pymatau', entity)
 
-    def get_or_update_thing(data):
-        try:
-            id = data["@iot.id"]
-            try:
-                thing = Thing.objects.get(id=id)
-                return thing
-            except Thing.DoesNotExist:
-                return
-        except KeyError:
-            raise BadRequest()
+        if isinstance(data, dict):
+            data = geojson_to_geos(data)
 
-    def get_or_update_things(data):
-        things = []
-        for thing in data:
-            try:
-                id = thing["@iot.id"]
+        many_children = False
+        if isinstance(data, dict):
+            if "@iot.id" in data:
+                given_id = data["@iot.id"]
                 try:
-                    t = Thing.objects.get(id=id)
-                    things.append(t)
-                except Datastream.DoesNotExist:
+                    existing_entity = model.objects.get(id=given_id)
+                    return existing_entity
+                except model.DoesNotExist:
                     return
-            except KeyError:
+            else:
+                for key in MODEL_KEYS:
+                    if key in data:
+                        if isinstance(data[key], dict):
+                            child = self.get_or_create_children(data[key], key)
+                            data.pop(key)
+                            data[key] = child
+                        if isinstance(data[key], list):
+                            children = []
+                            for d in data[key]:
+                                child = self.get_or_create_children(d, key)
+                                children.append(child)
+                            data.pop(key)
+                            many_children = children
+                            child_entity = key
+
+                # TODO: check for other exceptions
+                try:
+                    # need to check for related fields: and create them seperately
+                    new_entity, created = model.objects.get_or_create(**data)
+                    if created:
+                        if many_children:
+                            getattr(new_entity, child_entity).add(*many_children)
+                        return new_entity
+                except FieldError:
+                    return
+        elif isinstance(data, list):
+            parent_basename = kwargs["parent_basename"]
+            parent_entity = kwargs["parent_entity"]
+
+            entity_list = []
+            for entity in data:
+                if "@iot.id" in data:
+                    given_id = data["@iot.id"]
+                    try:
+                        existing_entity = model.objects.get(id=given_id)
+                        entity_list.append(existing_entity)
+                    except model.DoesNotExist:
+                        return
+                else:
+                    # TODO: run parse_interval_time(ds)
+                    # first remove all related fields:
+                    nested_entity_list = []
+                    for key in MODEL_KEYS.keys():
+                        if key in data:
+                            nested_entity_list.append({key: data[key]})
+                            data.pop(key)
+
+                    # now try to create:
+                    for t in nested_entity_list:
+                        data[list(t.keys())[0]] = self.get_or_create(list(t.values())[0])
+
+                    # now try to create it:
+                    new_entity, created = model.objects.get_or_create(**data)
+
+                    if not created:
+                        if parent_basename == given_entity:
+                            data[given_entity] = parent_entity
+                            new_entity, created = model.objects.get_or_create(**data)
+                        else:
+                            return
+                    entity_list.append(new_entity)
+            return entity_list
+
+    def get_or_update_children(self, data, given_entity):
+        entity = self.MODEL_KEYS[given_entity]
+        model = apps.get_model('pymatau', entity)
+
+        if isinstance(data, dict):
+            if "@iot.id" in data:
+                given_id = data["@iot.id"]
+                try:
+                    existing_entity = model.objects.get(id=given_id)
+                    return existing_entity
+                except model.DoesNotExist:
+                    return
+            else:
                 raise BadRequest()
-        return things
-
-    def get_or_update_locations(data):
-        locationlist = []
-        for loc in data:
-            try:
-                id = loc["@iot.id"]
-                try:
-                    location = Location.objects.get(id=id)
-                    locationlist.append(location)
-                except Location.DoesNotExist:
-                    return
-            except KeyError:
-                raise BadRequest()
-        return locationlist
-
-    def get_or_update_datastreams(data):
-        datastream = []
-        for ds in data:
-            try:
-                id = ds["@iot.id"]
-                try:
-                    datastr = Datastream.objects.get(id=id)
-                    datastream.append(datastr)
-                except Datastream.DoesNotExist:
-                    return
-            except KeyError:
-                raise BadRequest()
-        return datastream
-
-    def get_or_update_observations(data):
-        observation = []
-        for obs in data:
-            try:
-                id = obs["@iot.id"]
-                try:
-                    observ = Observation.objects.get(id=id)
-                    observation.append(observ)
-                except Datastream.DoesNotExist:
-                    return
-            except KeyError:
-                raise BadRequest()
-        return observation
-
-    def get_or_update_historicallocations(data):
-        historicallocation = []
-        for his in data:
-            try:
-                id = his["@iot.id"]
-                try:
-                    hilocat = HistoricalLocation.objects.get(id=id)
-                    historicallocation.append(hilocat)
-                except HistoricalLocation.DoesNotExist:
-                    return
-            except KeyError:
-                raise BadRequest()
-        return historicallocation
-
-    def get_or_create_sensor(data):
-        # should test if data is json dictionary
-        try:
-            id = data["@iot.id"]
-            try:
-                sensor = Sensor.objects.get(id=id)
-                return sensor
-            except Sensor.DoesNotExist:
-                return
-        except KeyError:
-            try:
-                name = data["name"]
-                description = data["description"]
-                encodingType = data["encodingType"]
-                metadata = data["metadata"]
-                sens, created = Sensor.objects.get_or_create(
-                    name=name,
-                    description=description,
-                    encodingType=encodingType,
-                    metadata=metadata
-                    )
-                return sens
-            except KeyError:
-                return
-
-    def get_or_create_observedproperty(data):
-        # should test if data is json dictionary
-        try:
-            id = data["@iot.id"]
-            try:
-                observedproperty = ObservedProperty.objects.get(id=id)
-                return observedproperty
-            except ObservedProperty.DoesNotExist:
-                return
-        except KeyError:
-            try:
-                name = data["name"]
-                definition = data["definition"]
-                description = data["description"]
-                oprop, created = ObservedProperty.objects.get_or_create(
-                    name=name,
-                    definition=definition,
-                    description=description
-                    )
-                return oprop
-            except KeyError:
-                return
-
-    def get_or_create_datastream(data):
-        """
-        Creates (or gets if exists) a single Datastream object. Can only be
-        called by an Observation entity create request.
-        """
-        # should test if data is json dictionary
-        try:
-            id = data["@iot.id"]
-            try:
-                datastream = Datastream.objects.get(id=id)
-                return datastream
-            except Datastream.DoesNotExist:
-                return
-        except KeyError:
-            d = {}
-            try:
-                data = ViewSet.parse_interval_time(data)
-                sensor = data["Sensor"]
-                observedproperty = data["ObservedProperty"]
-                thing = data['Thing']
-
-                d['name'] = data["name"]
-                d['description'] = data["description"]
-                d['unitOfMeasurement'] = data["unitOfMeasurement"]
-                d['observationType'] = data["observationType"]
-                # create necessary related fields
-                d['Sensor'] = PostRelations.get_or_create_sensor(
-                    sensor
-                )
-                d['ObservedProperty'] = PostRelations.get_or_create_observedproperty(
-                    observedproperty
-                )
-                d['Thing'] = PostRelations.get_or_create_thing(
-                    thing
-                )
-                # optional fields
-                try:
-                    d['observedArea'] = GEOSGeometry(str(data["observedArea"]))
-                except KeyError:
-                    pass
-                try:
-                    d['phenomenonTime'] = data["phenomenonTime"]
-                except KeyError:
-                    pass
-                try:
-                    d['resultTime'] = data["resultTime"]
-                except KeyError:
-                    pass
-                datastr, created = Datastream.objects.get_or_create(**d)
-                return datastr
-            except KeyError:
-                return
-
-    def get_or_create_featureofinterest(data):
-        # should test if data is json dictionary
-        try:
-            id = data["@iot.id"]
-            try:
-                featureofinterest = FeatureOfInterest.objects.get(id=id)
-                return featureofinterest
-            except FeatureOfInterest.DoesNotExist:
-                return
-        except KeyError:
-            try:
-                name = data["name"]
-                description = data["description"]
-                encodingType = data["encodingType"]
-                feature = GEOSGeometry(str(data["feature"]))
-                foi, created = FeatureOfInterest.objects.get_or_create(
-                    name=name,
-                    description=description,
-                    encodingType=encodingType,
-                    feature=feature
-                    )
-                return foi
-            except KeyError:
-                return
-
-    def get_or_create_thing(data):
-        try:
-            id = data["@iot.id"]
-            try:
-                thing = Thing.objects.get(id=id)
-                return thing
-            except Thing.DoesNotExist:
-                return
-        except KeyError:
-            d = {}
-            try:
-                d['name'] = data["name"]
-                d['description'] = data["description"]
-                try:
-                    d['properties'] = data["properties"]
-                except KeyError:
-                    pass
-                thin, created = Thing.objects.get_or_create(**d)
-                try:
-                    locationData = data['Locations']
-                    basename = "Things"
-                    entity = thin
-                    location = PostRelations.get_or_create_locations(
-                        locationData,
-                        basename,
-                        entity
-                        )
-                    if location:
-                        thin.Locations.set(location)
-                except KeyError:
-                    pass
-                return thin
-            except KeyError:
-                return
-
-    def get_or_create_things(data):
-        things = []
-        for thing in data:
-            try:
-                id = thing["@iot.id"]
-                try:
-                    t = Thing.objects.get(id=id)
-                    things.append(t)
-                except Datastream.DoesNotExist:
-                    return
-            except KeyError:
-                d = {}
-                try:
-                    d['name'] = thing["name"]
-                    d['description'] = thing["description"]
+        elif isinstance(data, list):
+            entity_list = []
+            for entity in data:
+                if "@iot.id" in data:
+                    given_id = entity["@iot.id"]
                     try:
-                        d['properties'] = thing["properties"]
-                    except KeyError:
-                        pass
-                    t, created = Thing.objects.get_or_create(**d)
-                    # not required relations
-                    try:
-                        HistoricalLocationData = data['HistoricalLocations']
-                        basename = 'HistoricalLocations'
-                        entity = t
-                        historicallocation = PostRelations.get_or_create_historicallocations(
-                                    HistoricalLocationData,
-                                    basename,
-                                    entity
-                                    )
-                        t.HistoricalLocations.add(*historicallocation)
-                    except KeyError:
-                        pass
-                except KeyError:
-                    return
-                things.append(t)
-        return things
-
-    def get_or_create_locations(data, basename, entity):
-        locationlist = []
-        for loc in data:
-            try:
-                id = loc["@iot.id"]
-                try:
-                    location = Location.objects.get(id=id)
-                    locationlist.append(location)
-                except Location.DoesNotExist:
-                    return
-            except KeyError:
-                try:
-                    name = loc["name"]
-                    description = loc["description"]
-                    encodingType = loc["encodingType"]
-                    location = GEOSGeometry(str(loc["location"]))
-                    locat, created = Location.objects.get_or_create(
-                        name=name,
-                        description=description,
-                        encodingType=encodingType,
-                        location=location
-                        )
-                    if basename == 'Things' and entity:
-                        locat.Things.add(entity)
-                    try:
-                        HistoricalLocationData = loc['HistoricalLocations']
-                        bn = 'HistoricalLocations'
-                        entity = locat
-                        historicallocation = PostRelations.get_or_create_historicallocations(
-                                    HistoricalLocationData,
-                                    bn,
-                                    entity
-                                    )
-                        locat.HistoricalLocations.add(*historicallocation)
-                    except KeyError:
-                        pass
-                    # historical locations is tricky
-                    try:
-                        thingData = loc['Things']
-                        if basename == 'HistoricalLocations':
-                            thing = PostRelations.get_or_create_things(
-                                        thingData
-                                        )
-                            locat.Things.add(*thing)
-                    except KeyError:
-                        pass
-                except KeyError:
-                    return
-                locationlist.append(locat)
-        return locationlist
-
-    def get_or_create_datastreams(data, basename, entity):
-        datastream = []
-        for ds in data:
-            try:
-                id = ds["@iot.id"]
-                try:
-                    datastr = Datastream.objects.get(id=id)
-                    datastream.append(datastr)
-                except Datastream.DoesNotExist:
-                    return
-            except KeyError:
-                try:
-                    ds = ViewSet.parse_interval_time(ds)
-                    d = {}
-                    d['name'] = ds["name"]
-                    d['description'] = ds["description"]
-                    d['unitOfMeasurement'] = ds["unitOfMeasurement"]
-                    d['observationType'] = ds["observationType"]
-                    # create necessary related fields
-                    try:
-                        sensor = ds["Sensor"]
-                        d['Sensor'] = PostRelations.get_or_create_sensor(
-                                    sensor
-                                    )
-                    except KeyError:
-                        if basename == 'Sensors':
-                            d['Sensor'] = entity
-                        else:
-                            return
-                    try:
-                        observedproperty = ds["ObservedProperty"]
-                        d['ObservedProperty'] = PostRelations.get_or_create_observedproperty(
-                                    observedproperty
-                                    )
-                    except KeyError:
-                        if basename == 'ObservedProperties':
-                            d['ObservedProperty'] = entity
-                        else:
-                            return
-                    try:
-                        thing = ds['Thing']
-                        d['Thing'] = PostRelations.get_or_create_thing(
-                                    thing
-                                    )
-                    except KeyError:
-                        if basename == 'Things':
-                            d['Thing'] = entity
-                        else:
-                            return
-                    # optional fields
-                    try:
-                        d['observedArea'] = GEOSGeometry(str(ds["observedArea"]))
-                    except KeyError:
-                        pass
-                    try:
-                        d['phenomenonTime'] = ds["phenomenonTime"]
-                    except KeyError:
-                        pass
-                    try:
-                        d['resultTime'] = ds["resultTime"]
-                    except KeyError:
-                        pass
-                    datastr, created = Datastream.objects.get_or_create(**d)
-                    # not required relations
-                    try:
-                        observationData = ds['Observations']
-                        basename = 'Datastreams'
-                        entity = datastr
-                        observation = PostRelations.get_or_create_observations(
-                                    observationData,
-                                    basename,
-                                    entity
-                        )
-                        datastr.Observations.add(*observation, bulk=False)
-                    except KeyError:
-                        pass
-                except KeyError:
-                    return
-                datastream.append(datastr)
-        return datastream
-
-    def get_or_create_observations(data, basename, entity):
-        observation = []
-        for obs in data:
-            try:
-                id = obs["@iot.id"]
-                try:
-                    observ = Observation.objects.get(id=id)
-                    observation.append(observ)
-                except Datastream.DoesNotExist:
-                    return
-            except KeyError:
-                try:
-                    obs = ViewSet.parse_interval_time(obs)
-                    d = {}
-                    d['phenomenonTime'] = obs["phenomenonTime"]
-                    d['result'] = obs["result"]
-                    d['resultTime'] = obs["resultTime"]
-                    # create necessary related fields
-                    try:
-                        datastream = obs["Datastream"]
-                        datastream = PostRelations.get_or_create_datastream(datastream)
-                        d['Datastream'] = datastream
-                    except KeyError:
-                        if basename == 'Datastreams':
-                            datastream = entity
-                            d['Datastream'] = datastream
-                        else:
-                            return
-                    try:
-                        featureofinterest = obs["FeatureOfInterest"]
-                        d['FeatureOfInterest'] = PostRelations.get_or_create_featureofinterest(
-                                           featureofinterest
-                                           )
-                    except KeyError:
-                        if basename == 'FeaturesOfInterest':
-                            d['FeatureOfInterest'] = entity
-                        else:
-                            foi = ViewSet.create_missing_featureofinterest(obs)
-                            if foi:
-                                d["FeatureOfInterest"] = foi
-                            else:
-                                return
-                    # optional fields
-                    try:
-                        d['resultQuality'] = obs["resultQuality"]
-                    except KeyError:
-                        pass
-                    try:
-                        d['validTime'] = obs["validTime"]
-                    except KeyError:
-                        pass
-                    try:
-                        d['parameters'] = obs["parameters"]
-                    except KeyError:
-                        pass
-                    observ, created = Observation.objects.get_or_create(**d)
-                    observation.append(observ)
-                except KeyError:
-                    return
-        return observation
-
-    def get_or_create_historicallocations(data, basename, entity):
-        historicallocation = []
-        for his in data:
-            try:
-                id = his["@iot.id"]
-                try:
-                    hilocat = HistoricalLocation.objects.get(id=id)
-                    historicallocation.append(hilocat)
-                except HistoricalLocation.DoesNotExist:
-                    return
-            except KeyError:
-                try:
-                    d = {}
-                    d['time'] = his["time"]
-                    # create necessary related fields
-                    try:
-                        thing = his["Thing"]
-                        d['Thing'] = PostRelations.get_or_create_thing(thing)
-                    except KeyError:
-                        if basename == 'Things':
-                            d['Thing'] = entity
-                        else:
-                            return
-                    try:
-                        location = his["Locations"]
-                        bn = "HistoricalLocations"
-                        d['Locations'] = PostRelations.get_or_create_locations(
-                                           location,
-                                           bn,
-                                           None
-                                           )
-                    except KeyError:
-                        if basename == 'Locations':
-                            d['Locations'] = entity
-                        else:
-                            return
-                    hlocat, created = HistoricalLocation.objects.get_or_create(**d)
-                    historicallocation.append(hlocat)
-                except KeyError:
-                    return
-        return historicallocation
-
-
-class ViewSet(viewsets.ModelViewSet):
-    """
-    Overrides the DRF ModelViewSet methods of list, retrieve, and create.
-    """
-    DEFAULT_ENCODING = "application/vnd.geo+json"
-    NAME_LOOKUP = {
-        'thing': 'Things',
-        'historicallocation': 'HistoricalLocations',
-        'location': 'Locations',
-        'datastream': 'Datastreams',
-        'sensor': 'Sensors',
-        'observedproperty': 'ObservedProperties',
-        'observation': 'Observations',
-        'featureofinterest': 'FeaturesOfInterest'
-    }
-    INDICES = {
-        'HistoricalLocations': 'historicallocation_index',
-        'Locations': 'location_index',
-        'Things': 'thing_index',
-        'Thing': 'thing_index',
-        'Datastreams': 'datastream_index',
-        'Datastream': 'datastream_index',
-        'ObservedProperties': 'observedproperty_index',
-        'ObservedProperty': 'observedproperty_index',
-        'Sensors': 'sensor_index',
-        'Sensor': 'sensor_index',
-        'Observations': 'observation_index',
-        'FeaturesOfInterest': 'featureofinterest_index',
-        'FeatureOfInterest': 'featureofinterest_index'
-    }
-    REQUIRED_FIELDS = {
-        'historicallocation': [
-            'time',
-            'Thing',
-            'Locations'
-        ],
-        'location': [
-            'name',
-            'description',
-            'encodingType',
-            'location'
-        ],
-        'thing': [
-            'name',
-            'description'
-        ],
-        'datastream': [
-            'name',
-            'description',
-            'unitOfMeasurement',
-            'observationType',
-            'Thing',
-            'ObservedProperty',
-            'Sensor'
-        ],
-        'sensor': [
-            'name',
-            'description',
-            'encodingType',
-            'metadata'
-        ],
-        'observedproperty': [
-            'name',
-            'definition',
-            'description'
-        ],
-        'observation': [
-            'result',
-            'Datastream',
-            'FeatureOfInterest'
-        ],
-        'featureofinterest': [
-            'name',
-            'description',
-            'encodingType',
-            'feature'
-        ]
-    }
+                        existing_entity = model.objects.get(id=given_id)
+                        entity_list.append(existing_entity)
+                    except model.DoesNotExist:
+                        # TODO: check if it should break and return nothing or append null to list
+                        return
+                else:
+                    raise BadRequest()
+            return entity_list
 
     def queryset_methods(path_list, method, kwargs):
         """
@@ -671,14 +272,14 @@ class ViewSet(viewsets.ModelViewSet):
         """
         d = {}
         if method == "list":
-            cv = ViewSet.INDICES[path_list[-1]]
+            cv = INDICES[path_list[-1]]
             path_list = [item.split('(')[0] for item
                          in path_list if item[-1] == ')']
         elif method == "retrieve":
-            cv = ViewSet.INDICES[path_list[-1].split('(')[0]]
+            cv = INDICES[path_list[-1].split('(')[0]]
             path_list = [item.split('(')[0] for item in path_list[:-1]]
         elif method == "associationLink":
-            cv = ViewSet.INDICES[path_list[-1]]
+            cv = INDICES[path_list[-1]]
             path_list = [item.split('(')[0] for item
                          in path_list if item[-1] == ')']
             try:
@@ -848,242 +449,50 @@ class ViewSet(viewsets.ModelViewSet):
                 data['FeatureOfInterest'] = {"@iot.id": kwargs[parent]}
         return data
 
-    def geojson_to_geos(data):
-        """
-        Checks to see if either location, feature, or observedArea are in json
-        object and if they are, and are a dictionary, convert geojson geometery
-        to geos geometry.
-        """
-        geometries = ['location', 'feature', 'observedArea']
-        for geometry in geometries:
-            try:
-                if isinstance(data[geometry], dict):
-                    data[geometry] = GEOSGeometry(str(data[geometry]))
-            except KeyError:
-                pass
-        return data
-
-    def parse_interval_time(data):
-        interval_times = ['phenomenonTime', 'resultTime', 'validTime']
-        for time_obj in interval_times:
-            try:
-                for time in data[time_obj].split("/"):
-                    try:
-                        dateutil.parser.parse(time)
-                    except ValueError:
-                        raise Unprocessable()
-            except KeyError:
-                pass
-        return data
-
-    def process_data(data, basename, kwargs):
-        data = ViewSet.relate_parent(data, basename, kwargs)
-        data = ViewSet.geojson_to_geos(data)
-        data = ViewSet.parse_interval_time(data)
-        if basename == 'observation':
-            try:
-                result = data['result']
-                data['result'] = {'result': result}
-                return data
-            except KeyError:
-                raise BadRequest()
-        return data
-
-    def get_or_update_related(data):
+    def get_or_update_related(self):
         d = {}
-        if 'FeatureOfInterest' in data:
-            featureofinterestData = data['FeatureOfInterest']
-            featureofinterest = PostRelations.get_or_update_featureofinterest(
-                featureofinterestData
-                )
-            if featureofinterest:
-                d['FeatureOfInterest'] = featureofinterest
-        if 'Thing' in data:
-            thingData = data['Thing']
-            thing = PostRelations.get_or_update_thing(
-                thingData
-                )
-            if thing:
-                d['Thing'] = thing
-
-        if 'Sensor' in data:
-            sensorData = data['Sensor']
-            sensor = PostRelations.get_or_update_sensor(
-                sensorData
-                )
-            if sensor:
-                d['Sensor'] = sensor
-
-        if 'ObservedProperty' in data:
-            observedpropertyData = data['ObservedProperty']
-            observedproperty = PostRelations.get_or_update_observedproperty(
-                observedpropertyData
-                )
-            if observedproperty:
-                d['ObservedProperty'] = observedproperty
-
-        if 'Datastream' in data:
-            datastreamData = data['Datastream']
-            datastream = PostRelations.get_or_update_datastream(
-                datastreamData
-                )
-            if datastream:
-                d['Datastream'] = datastream
-
-        if 'Locations' in data:
-            locationData = data['Locations']
-            location = PostRelations.get_or_update_locations(
-                locationData
-                )
-            if location:
-                d['Locations'] = location
-
-        if 'Things' in data:
-            thingData = data['Things']
-            things = PostRelations.get_or_update_things(
-                thingData
-                )
-            if things:
-                d['Things'] = things
-
-        if 'Datastreams' in data:
-            datastreamData = data['Datastreams']
-            datastreams = PostRelations.get_or_update_datastreams(
-                            datastreamData
-                            )
-            if datastreams:
-                d['Datastreams'] = datastreams
-
-        if 'HistoricalLocations' in data:
-            historicallocationData = data['HistoricalLocations']
-            historicallocation = PostRelations.get_or_update_historicallocations(
-                historicallocationData
-            )
-            if historicallocation:
-                d['HistoricalLocations'] = historicallocation
-
-        if 'Observations' in data:
-            observationData = data['Observations']
-            observations = PostRelations.get_or_update_observations(
-                            observationData
-                            )
-            if observations:
-                d['Observations'] = observations
-
+        for key in MODEL_KEYS:
+            if key in self.data:
+                child = self.get_or_update_children(self.data[key], key)
+                if child:
+                    d[key] = child
         return d
 
-    def get_or_create_related(data, basename, serializer):
+    def get_or_create_related(self, basename, serializer):
         d = {}
-        if 'FeatureOfInterest' in data:
-            featureofinterestData = data['FeatureOfInterest']
-            featureofinterest = PostRelations.get_or_create_featureofinterest(
-                featureofinterestData
-                )
-            if featureofinterest:
-                d['FeatureOfInterest'] = featureofinterest
-        if 'Thing' in data:
-            thingData = data['Thing']
-            thing = PostRelations.get_or_create_thing(
-                thingData
-                )
-            if thing:
-                d['Thing'] = thing
-
-        if 'Sensor' in data:
-            sensorData = data['Sensor']
-            sensor = PostRelations.get_or_create_sensor(
-                sensorData
-                )
-            if sensor:
-                d['Sensor'] = sensor
-
-        if 'ObservedProperty' in data:
-            observedpropertyData = data['ObservedProperty']
-            observedproperty = PostRelations.get_or_create_observedproperty(
-                observedpropertyData
-                )
-            if observedproperty:
-                d['ObservedProperty'] = observedproperty
-
-        if 'Datastream' in data:
-            datastreamData = data['Datastream']
-            datastream = PostRelations.get_or_create_datastream(
-                datastreamData
-                )
-            if datastream:
-                d['Datastream'] = datastream
-
-        if 'Locations' in data:
-            locationData = data['Locations']
-            location_basename = ViewSet.NAME_LOOKUP[basename]
-            if location_basename == 'HistoricalLocations':
-                entity = None
-            else:
-                entity = serializer.save()
-            location = PostRelations.get_or_create_locations(
-                locationData,
-                location_basename,
-                entity
-                )
-            if location:
-                d['Locations'] = location
-
-        if 'Things' in data:
-            thingData = data['Things']
-            things = PostRelations.get_or_create_things(
-                thingData
-                )
-            if things:
-                d['Things'] = things
-
-        if 'Datastreams' in data:
-            datastreamData = data['Datastreams']
-            datastream_basename = ViewSet.NAME_LOOKUP[basename]
-            entity = serializer.save()
-            datastreams = PostRelations.get_or_create_datastreams(
-                            datastreamData,
-                            datastream_basename,
-                            entity
-                            )
-            if datastreams:
-                d['Datastreams'] = datastreams
-
-        if 'HistoricalLocations' in data:
-            historical_basename = ViewSet.NAME_LOOKUP[basename]
-            entity = serializer.save()
-            historicallocationData = data['HistoricalLocations']
-            historicallocation = PostRelations.get_or_create_historicallocations(
-                historicallocationData,
-                historical_basename,
-                entity
-            )
-            d['HistoricalLocations'] = historicallocation
-
-        if 'Observations' in data:
-            observationData = data['Observations']
-            observation_basename = ViewSet.NAME_LOOKUP[basename]
-            entity = serializer.save()
-            observations = PostRelations.get_or_create_observations(
-                            observationData,
-                            observation_basename,
-                            entity
-                            )
-            if observations:
-                d['Observations'] = observations
+        for key in MODEL_KEYS:
+            if key in self.data:
+                if isinstance(self.data[key], dict):
+                    child = self.get_or_create_children(self.data[key], key)
+                    if child:
+                        d[key] = child
+                if isinstance(self.data[key], list):
+                    xData = self.data[key]
+                    xBasename = self.NAME_LOOKUP[basename]
+                    # TODO: add spcial case for locations/historicallocations?
+                    entity = serializer.save()
+                    child = self.get_or_create_children(
+                        xData,
+                        key,
+                        parent_basename=xBasename,
+                        parent_entity=entity
+                    )
+                    if child:
+                        d[key] = child
         return d
 
-    def create_missing_featureofinterest(data):
+    def create_missing_featureofinterest(self, data):
         if 'Datastreams' in data:
             ds = data['Datastreams']
             if len(ds) == 1:
-                datastream = PostRelations.get_or_create_datastream(ds[0])
+                datastream = self.get_or_create_children(ds[0], "Datastreams")
         elif 'Datastream' in data:
             ds = data['Datastream']
-            datastream = PostRelations.get_or_create_datastream(ds)
+            datastream = self.get_or_create_children(ds)
         if datastream:
             try:
                 location = datastream.Thing.Locations.get(
-                            encodingType=ViewSet.DEFAULT_ENCODING
+                            encodingType=DEFAULT_ENCODING
                             )
                 featureofinterest = FeatureOfInterest.objects.create(
                             name=location.name,
@@ -1095,11 +504,16 @@ class ViewSet(viewsets.ModelViewSet):
             except ObjectDoesNotExist:
                 raise BadRequest()
 
+
+class ViewSet(viewsets.ModelViewSet):
+    """
+    Overrides the DRF ModelViewSet methods of list, retrieve, and create, update.
+    """
     def list(self, request, version, **kwargs):
         path = request._request.path
         path_list = path.split('/')[3:]
         method = 'list'
-        d = ViewSet.queryset_methods(path_list, method, kwargs)
+        d = NestedViewSet.queryset_methods(path_list, method, kwargs)
         queryset = self.get_queryset().filter(**d)
         queryset = self.filter_queryset(queryset)
         page = self.paginate_queryset(queryset)
@@ -1128,7 +542,7 @@ class ViewSet(viewsets.ModelViewSet):
         path = request._request.path
         path_list = path.split('/')[3:]
         method = 'retrieve'
-        d = ViewSet.queryset_methods(path_list, method, kwargs)
+        d = NestedViewSet.queryset_methods(path_list, method, kwargs)
         d['pk'] = kwargs['pk']
         queryset = self.get_queryset().filter(**d)
         queryset = self.filter_queryset(queryset)
@@ -1145,19 +559,23 @@ class ViewSet(viewsets.ModelViewSet):
         if isinstance(data, list):
             raise Unprocessable()
         basename = self.basename
-        processed_data = ViewSet.process_data(data, basename, kwargs)
+        processed_data = process_data(data, basename, kwargs)
+
         if basename == 'observation' and 'FeatureOfInterest' not in processed_data:
-            foi = ViewSet.create_missing_featureofinterest(processed_data)
+            foi = NestedViewSet.create_missing_featureofinterest(processed_data)
             processed_data["FeatureOfInterest"] = {"@iot.id": foi.id}
-        for entity, fields in ViewSet.REQUIRED_FIELDS.items():
+
+        for entity, fields in REQUIRED_FIELDS.items():
             if entity == basename:
                 for field in fields:
                     if field not in processed_data:
                         raise BadRequest()
+
         serializer = self.get_serializer(data=processed_data)
+
         if serializer.is_valid(raise_exception=True):
-            d = ViewSet.get_or_create_related(
-                processed_data,
+            foo = NestedViewSet(processed_data)
+            d = foo.get_or_create_related(
                 basename,
                 serializer
             )
@@ -1180,11 +598,11 @@ class ViewSet(viewsets.ModelViewSet):
         if request._request.method == 'PATCH':
             data = request.data
             basename = self.basename
-            processed_data = ViewSet.process_data(data, basename, kwargs)
+            processed_data = process_data(data, basename, kwargs)
             instance = self.get_object()
             serializer = self.get_serializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
-            d = ViewSet.get_or_update_related(
+            d = NestedViewSet.get_or_update_related(
                     processed_data
                 )
             if d:
@@ -1212,7 +630,7 @@ class PropertyPath(object):
             path = request._request.path
             path_list = path.split('/')[3:-1]
             method = "associationLink"
-            d = ViewSet.queryset_methods(path_list, method, kwargs)
+            d = NestedViewSet.queryset_methods(path_list, method, kwargs)
             queryset = self.get_queryset().filter(**d)
             queryset = self.filter_queryset(queryset)
             d = []
@@ -1285,7 +703,7 @@ class PropertyPath(object):
             path = request._request.path
             path_list = path.split('/')[3:-1]
             method = "associationLink"
-            d = ViewSet.queryset_methods(path_list, method, kwargs)
+            d = NestedViewSet.queryset_methods(path_list, method, kwargs)
             queryset = self.get_queryset().filter(**d)
             queryset = self.filter_queryset(queryset)
             d = []
@@ -1379,7 +797,7 @@ class PropertyPath(object):
             path = request._request.path
             path_list = path.split('/')[3:-1]
             method = "associationLink"
-            d = ViewSet.queryset_methods(path_list, method, kwargs)
+            d = NestedViewSet.queryset_methods(path_list, method, kwargs)
             queryset = self.get_queryset().filter(**d)
             queryset = self.filter_queryset(queryset)
             d = []
@@ -1416,7 +834,7 @@ class PropertyPath(object):
             path = request._request.path
             path_list = path.split('/')[3:-1]
             method = "associationLink"
-            d = ViewSet.queryset_methods(path_list, method, kwargs)
+            d = NestedViewSet.queryset_methods(path_list, method, kwargs)
             queryset = self.get_queryset().filter(**d)
             queryset = self.filter_queryset(queryset)
             d = []
@@ -1567,7 +985,7 @@ class PropertyPath(object):
             path = request._request.path
             path_list = path.split('/')[3:-1]
             method = "associationLink"
-            d = ViewSet.queryset_methods(path_list, method, kwargs)
+            d = NestedViewSet.queryset_methods(path_list, method, kwargs)
             queryset = self.get_queryset().filter(**d)
             queryset = self.filter_queryset(queryset)
             d = []
@@ -1658,7 +1076,7 @@ class PropertyPath(object):
             path = request._request.path
             path_list = path.split('/')[3:-1]
             method = "associationLink"
-            d = ViewSet.queryset_methods(path_list, method, kwargs)
+            d = NestedViewSet.queryset_methods(path_list, method, kwargs)
             queryset = self.get_queryset().filter(**d)
             queryset = self.filter_queryset(queryset)
             d = []
@@ -1731,7 +1149,7 @@ class PropertyPath(object):
             path = request._request.path
             path_list = path.split('/')[3:-1]
             method = "associationLink"
-            d = ViewSet.queryset_methods(path_list, method, kwargs)
+            d = NestedViewSet.queryset_methods(path_list, method, kwargs)
             queryset = self.get_queryset().filter(**d)
             queryset = self.filter_queryset(queryset)
             d = []
@@ -1858,7 +1276,7 @@ class PropertyPath(object):
             path = request._request.path
             path_list = path.split('/')[3:-1]
             method = "associationLink"
-            d = ViewSet.queryset_methods(path_list, method, kwargs)
+            d = NestedViewSet.queryset_methods(path_list, method, kwargs)
             queryset = self.get_queryset().filter(**d)
             queryset = self.filter_queryset(queryset)
             d = []

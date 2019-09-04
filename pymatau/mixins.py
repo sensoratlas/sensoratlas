@@ -39,7 +39,7 @@ class ControlInformation:
             "datastream",
             "Datastreams_pk",
             [
-                {'sensor': "Senors"},
+                {'sensor': "Sensors"},
                 {'observedproperty': "ObservedProperties"},
                 {'thing': "Things"},
                 {"observation": "Observations"}
@@ -101,7 +101,6 @@ class ControlInformation:
                             )
                     )
         return nav_links
-
 
     def to_representation(self, obj):
         """
