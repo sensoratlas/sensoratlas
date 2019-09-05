@@ -200,8 +200,9 @@ def process_data(data, basename, url_kwargs):
 
 
 class NestedViewSet:
-    def __init__(self, data, basename, url_kwargs):
-        self.data = process_data(data, basename, url_kwargs)
+    def __init__(self, **kwargs):
+        if kwargs:
+            self.data = process_data(kwargs["data"], kwargs["basename"], kwargs["url_kwargs"])
 
     def get_or_create_children(self, data, given_entity, **kwargs):
         entity = MODEL_KEYS[given_entity]
@@ -308,7 +309,7 @@ class NestedViewSet:
                     raise BadRequest()
             return entity_list
 
-    def queryset_methods(path_list, method, kwargs):
+    def queryset_methods(self, path_list, method, kwargs):
         """
         Adds nested entites to the queryset of the current viewset, thereby
         allowing nested expansions to be properly queried.
@@ -528,7 +529,8 @@ class ViewSet(viewsets.ModelViewSet):
         path = request._request.path
         path_list = path.split('/')[3:]
         method = 'list'
-        d = NestedViewSet.queryset_methods(path_list, method, kwargs)
+        vs = NestedViewSet()
+        d = vs.queryset_methods(path_list, method, kwargs)
         queryset = self.get_queryset().filter(**d)
         queryset = self.filter_queryset(queryset)
         page = self.paginate_queryset(queryset)
@@ -557,7 +559,8 @@ class ViewSet(viewsets.ModelViewSet):
         path = request._request.path
         path_list = path.split('/')[3:]
         method = 'retrieve'
-        d = NestedViewSet.queryset_methods(path_list, method, kwargs)
+        vs = NestedViewSet()
+        d = vs.queryset_methods(path_list, method, kwargs)
         d['pk'] = kwargs['pk']
         queryset = self.get_queryset().filter(**d)
         queryset = self.filter_queryset(queryset)
@@ -574,7 +577,7 @@ class ViewSet(viewsets.ModelViewSet):
         if isinstance(data, list):
             raise Unprocessable()
         basename = self.basename
-        vs = NestedViewSet(data, basename, kwargs)
+        vs = NestedViewSet(data=data, basename=basename, url_kwargs=kwargs)
         if basename == 'observation' and 'FeatureOfInterest' not in vs.data:
             foi = vs.create_missing_featureofinterest()
             vs.data["FeatureOfInterest"] = {"@iot.id": foi.id}
@@ -611,7 +614,7 @@ class ViewSet(viewsets.ModelViewSet):
         if request._request.method == 'PATCH':
             data = request.data
             basename = self.basename
-            vs = NestedViewSet(data, basename, kwargs)
+            vs = NestedViewSet(data=data, basename=basename, url_kwargs=kwargs)
             instance = self.get_object()
             serializer = self.get_serializer(instance, data=vs.data, partial=True)
             serializer.is_valid(raise_exception=True)
@@ -641,7 +644,8 @@ class PropertyPath(object):
             path = request._request.path
             path_list = path.split('/')[3:-1]
             method = "associationLink"
-            d = NestedViewSet.queryset_methods(path_list, method, kwargs)
+            vs = NestedViewSet()
+            d = vs.queryset_methods(path_list, method, kwargs)
             queryset = self.get_queryset().filter(**d)
             queryset = self.filter_queryset(queryset)
             d = []
@@ -714,7 +718,8 @@ class PropertyPath(object):
             path = request._request.path
             path_list = path.split('/')[3:-1]
             method = "associationLink"
-            d = NestedViewSet.queryset_methods(path_list, method, kwargs)
+            vs = NestedViewSet()
+            d = vs.queryset_methods(path_list, method, kwargs)
             queryset = self.get_queryset().filter(**d)
             queryset = self.filter_queryset(queryset)
             d = []
@@ -808,7 +813,8 @@ class PropertyPath(object):
             path = request._request.path
             path_list = path.split('/')[3:-1]
             method = "associationLink"
-            d = NestedViewSet.queryset_methods(path_list, method, kwargs)
+            vs = NestedViewSet()
+            d = vs.queryset_methods(path_list, method, kwargs)
             queryset = self.get_queryset().filter(**d)
             queryset = self.filter_queryset(queryset)
             d = []
@@ -845,7 +851,8 @@ class PropertyPath(object):
             path = request._request.path
             path_list = path.split('/')[3:-1]
             method = "associationLink"
-            d = NestedViewSet.queryset_methods(path_list, method, kwargs)
+            vs = NestedViewSet()
+            d = vs.queryset_methods(path_list, method, kwargs)
             queryset = self.get_queryset().filter(**d)
             queryset = self.filter_queryset(queryset)
             d = []
@@ -996,7 +1003,8 @@ class PropertyPath(object):
             path = request._request.path
             path_list = path.split('/')[3:-1]
             method = "associationLink"
-            d = NestedViewSet.queryset_methods(path_list, method, kwargs)
+            vs = NestedViewSet()
+            d = vs.queryset_methods(path_list, method, kwargs)
             queryset = self.get_queryset().filter(**d)
             queryset = self.filter_queryset(queryset)
             d = []
@@ -1087,7 +1095,8 @@ class PropertyPath(object):
             path = request._request.path
             path_list = path.split('/')[3:-1]
             method = "associationLink"
-            d = NestedViewSet.queryset_methods(path_list, method, kwargs)
+            vs = NestedViewSet()
+            d = vs.queryset_methods(path_list, method, kwargs)
             queryset = self.get_queryset().filter(**d)
             queryset = self.filter_queryset(queryset)
             d = []
@@ -1160,7 +1169,8 @@ class PropertyPath(object):
             path = request._request.path
             path_list = path.split('/')[3:-1]
             method = "associationLink"
-            d = NestedViewSet.queryset_methods(path_list, method, kwargs)
+            vs = NestedViewSet()
+            d = vs.queryset_methods(path_list, method, kwargs)
             queryset = self.get_queryset().filter(**d)
             queryset = self.filter_queryset(queryset)
             d = []
@@ -1287,7 +1297,8 @@ class PropertyPath(object):
             path = request._request.path
             path_list = path.split('/')[3:-1]
             method = "associationLink"
-            d = NestedViewSet.queryset_methods(path_list, method, kwargs)
+            vs = NestedViewSet()
+            d = vs.queryset_methods(path_list, method, kwargs)
             queryset = self.get_queryset().filter(**d)
             queryset = self.filter_queryset(queryset)
             d = []
