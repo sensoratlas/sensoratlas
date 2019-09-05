@@ -114,14 +114,29 @@ def geojson_to_geos(data):
     object and if they are, and are a dictionary, convert geojson geometery
     to geos geometry.
     """
+
+    def change_keys(obj, convert):
+        """
+        Recursively goes through the dictionary obj and replaces keys with the convert function.
+        """
+        if isinstance(obj, dict):
+            new = obj.__class__()
+            for k, v in obj.items():
+                if k in convert:
+                    new[k] = GEOSGeometry(str(v))
+                else:
+                    new[k] = change_keys(v, convert)
+        elif isinstance(obj, (list, set, tuple)):
+            new = obj.__class__(change_keys(v, convert) for v in obj)
+        else:
+            return obj
+        return new
+
     geometries = ['location', 'feature', 'observedArea']
-    for geometry in geometries:
-        try:
-            if isinstance(data[geometry], dict):
-                data[geometry] = GEOSGeometry(str(data[geometry]))
-        except KeyError:
-            pass
-    return data
+
+    geometry_fixed = change_keys(data, geometries)
+
+    return geometry_fixed
 
 
 def parse_interval_time(data):
@@ -138,8 +153,43 @@ def parse_interval_time(data):
     return data
 
 
-def process_data(data, basename, kwargs):
-    data = NestedViewSet.relate_parent(data, basename, kwargs)
+def relate_parent(data, basename, url_kwargs):
+    """
+    Add parent as related entity if created entity is nested.
+    """
+    if list(url_kwargs.keys())[-1] != "version":
+        parent = list(url_kwargs.keys())[-1]
+        if parent == "Locations_pk":
+            data['Locations'] = [{"@iot.id": url_kwargs[parent]}]
+
+        if parent == "Sensors_pk":
+            data['Sensor'] = {"@iot.id": url_kwargs[parent]}
+
+        if parent == "ObservedProperties_pk":
+            data['ObservedProperty'] = {"@iot.id": url_kwargs[parent]}
+
+        if parent == "Things_pk":
+            if basename == "location":
+                data['Things'] = [{"@iot.id": url_kwargs[parent]}]
+            else:
+                data['Thing'] = {"@iot.id": url_kwargs[parent]}
+
+        if parent == "Observations_pk":
+            data['Observations'] = [{"@iot.id": url_kwargs[parent]}]
+
+        if parent == "Datastreams_pk":
+            if basename == "observation":
+                data['Datastream'] = {"@iot.id": url_kwargs[parent]}
+            else:
+                data['Datastreams'] = [{"@iot.id": url_kwargs[parent]}]
+
+        if parent == "FeaturesOfInterest_pk":
+            data['FeatureOfInterest'] = {"@iot.id": url_kwargs[parent]}
+    return data
+
+
+def process_data(data, basename, url_kwargs):
+    data = relate_parent(data, basename, url_kwargs)
     data = geojson_to_geos(data)
     data = parse_interval_time(data)
     if basename == 'observation':
@@ -153,15 +203,12 @@ def process_data(data, basename, kwargs):
 
 
 class NestedViewSet:
-    def __init__(self, data):
-        self.data = data
+    def __init__(self, data, basename, url_kwargs):
+        self.data = process_data(data, basename, url_kwargs)
 
     def get_or_create_children(self, data, given_entity, **kwargs):
         entity = MODEL_KEYS[given_entity]
         model = apps.get_model('pymatau', entity)
-
-        if isinstance(data, dict):
-            data = geojson_to_geos(data)
 
         many_children = False
         if isinstance(data, dict):
@@ -204,8 +251,8 @@ class NestedViewSet:
 
             entity_list = []
             for entity in data:
-                if "@iot.id" in data:
-                    given_id = data["@iot.id"]
+                if "@iot.id" in entity:
+                    given_id = entity["@iot.id"]
                     try:
                         existing_entity = model.objects.get(id=given_id)
                         entity_list.append(existing_entity)
@@ -216,28 +263,27 @@ class NestedViewSet:
                     # first remove all related fields:
                     nested_entity_list = []
                     for key in MODEL_KEYS.keys():
-                        if key in data:
-                            nested_entity_list.append({key: data[key]})
-                            data.pop(key)
+                        if key in entity:
+                            nested_entity_list.append({key: entity[key]})
+                            entity.pop(key)
 
                     # now try to create:
                     for t in nested_entity_list:
-                        data[list(t.keys())[0]] = self.get_or_create(list(t.values())[0])
+                        entity[list(t.keys())[0]] = self.get_or_create(list(t.values())[0])
 
-                    # now try to create it:
-                    new_entity, created = model.objects.get_or_create(**data)
+                    new_entity, created = model.objects.get_or_create(**entity)
 
                     if not created:
                         if parent_basename == given_entity:
-                            data[given_entity] = parent_entity
-                            new_entity, created = model.objects.get_or_create(**data)
+                            entity[given_entity] = parent_entity
+                            new_entity, created = model.objects.get_or_create(**entity)
                         else:
                             return
                     entity_list.append(new_entity)
             return entity_list
 
     def get_or_update_children(self, data, given_entity):
-        entity = self.MODEL_KEYS[given_entity]
+        entity = MODEL_KEYS[given_entity]
         model = apps.get_model('pymatau', entity)
 
         if isinstance(data, dict):
@@ -253,7 +299,7 @@ class NestedViewSet:
         elif isinstance(data, list):
             entity_list = []
             for entity in data:
-                if "@iot.id" in data:
+                if "@iot.id" in entity:
                     given_id = entity["@iot.id"]
                     try:
                         existing_entity = model.objects.get(id=given_id)
@@ -421,34 +467,6 @@ class NestedViewSet:
             d[field] = v
         return d
 
-    def relate_parent(data, basename, kwargs):
-        """
-        Add parent as related entity if created entity is nested.
-        """
-        if list(kwargs.keys())[-1] != "version":
-            parent = list(kwargs.keys())[-1]
-            if parent == "Locations_pk":
-                data['Locations'] = [{"@iot.id": kwargs[parent]}]
-            if parent == "Sensors_pk":
-                data['Sensor'] = {"@iot.id": kwargs[parent]}
-            if parent == "ObservedProperties_pk":
-                data['ObservedProperty'] = {"@iot.id": kwargs[parent]}
-            if parent == "Things_pk":
-                if basename == "location":
-                    data['Things'] = [{"@iot.id": kwargs[parent]}]
-                else:
-                    data['Thing'] = {"@iot.id": kwargs[parent]}
-            if parent == "Observations_pk":
-                data['Observations'] = [{"@iot.id": kwargs[parent]}]
-            if parent == "Datastreams_pk":
-                if basename == "observation":
-                    data['Datastream'] = {"@iot.id": kwargs[parent]}
-                else:
-                    data['Datastreams'] = [{"@iot.id": kwargs[parent]}]
-            if parent == "FeaturesOfInterest_pk":
-                data['FeatureOfInterest'] = {"@iot.id": kwargs[parent]}
-        return data
-
     def get_or_update_related(self):
         d = {}
         for key in MODEL_KEYS:
@@ -468,8 +486,8 @@ class NestedViewSet:
                         d[key] = child
                 if isinstance(self.data[key], list):
                     xData = self.data[key]
-                    xBasename = self.NAME_LOOKUP[basename]
-                    # TODO: add spcial case for locations/historicallocations?
+                    xBasename = NAME_LOOKUP[basename]
+                    # TODO: add special case for locations/historicallocations? (not necessay if HistoricalLocation.Thing can be null)
                     entity = serializer.save()
                     child = self.get_or_create_children(
                         xData,
@@ -481,14 +499,14 @@ class NestedViewSet:
                         d[key] = child
         return d
 
-    def create_missing_featureofinterest(self, data):
-        if 'Datastreams' in data:
-            ds = data['Datastreams']
+    def create_missing_featureofinterest(self):
+        if 'Datastreams' in self.data:
+            ds = self.data['Datastreams']
             if len(ds) == 1:
                 datastream = self.get_or_create_children(ds[0], "Datastreams")
-        elif 'Datastream' in data:
-            ds = data['Datastream']
-            datastream = self.get_or_create_children(ds)
+        elif 'Datastream' in self.data:
+            ds = self.data['Datastream']
+            datastream = self.get_or_create_children(ds, "Datastream")
         if datastream:
             try:
                 location = datastream.Thing.Locations.get(
@@ -559,23 +577,21 @@ class ViewSet(viewsets.ModelViewSet):
         if isinstance(data, list):
             raise Unprocessable()
         basename = self.basename
-        processed_data = process_data(data, basename, kwargs)
-
-        if basename == 'observation' and 'FeatureOfInterest' not in processed_data:
-            foi = NestedViewSet.create_missing_featureofinterest(processed_data)
-            processed_data["FeatureOfInterest"] = {"@iot.id": foi.id}
+        vs = NestedViewSet(data, basename, kwargs)
+        if basename == 'observation' and 'FeatureOfInterest' not in vs.data:
+            foi = vs.create_missing_featureofinterest()
+            vs.data["FeatureOfInterest"] = {"@iot.id": foi.id}
 
         for entity, fields in REQUIRED_FIELDS.items():
             if entity == basename:
                 for field in fields:
-                    if field not in processed_data:
+                    if field not in vs.data:
                         raise BadRequest()
 
-        serializer = self.get_serializer(data=processed_data)
+        serializer = self.get_serializer(data=vs.data)
 
         if serializer.is_valid(raise_exception=True):
-            foo = NestedViewSet(processed_data)
-            d = foo.get_or_create_related(
+            d = vs.get_or_create_related(
                 basename,
                 serializer
             )
@@ -584,9 +600,9 @@ class ViewSet(viewsets.ModelViewSet):
             else:
                 self.perform_create(serializer)
         response = Response(
-                        {"Location": serializer.data['@iot.selfLink']},
-                        status=status.HTTP_201_CREATED
-                        )
+            {"Location": serializer.data['@iot.selfLink']},
+            status=status.HTTP_201_CREATED
+        )
         return response
 
     def update(self, request, *args, **kwargs):
@@ -598,13 +614,11 @@ class ViewSet(viewsets.ModelViewSet):
         if request._request.method == 'PATCH':
             data = request.data
             basename = self.basename
-            processed_data = process_data(data, basename, kwargs)
+            vs = NestedViewSet(data, basename, kwargs)
             instance = self.get_object()
-            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            serializer = self.get_serializer(instance, data=vs.data, partial=True)
             serializer.is_valid(raise_exception=True)
-            d = NestedViewSet.get_or_update_related(
-                    processed_data
-                )
+            d = vs.get_or_update_related()
             if d:
                 serializer.save(**d)
             else:

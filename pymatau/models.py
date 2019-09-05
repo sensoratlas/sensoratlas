@@ -99,6 +99,7 @@ class HistoricalLocation(models.Model):
     Thing = models.ForeignKey(
         Thing,
         on_delete=models.CASCADE,
+        null=True,  # TODO: null needs to be True for some nested related field creations, but HistoricalLocation objects with no related Thing must not exist.
         verbose_name='Thing',
         related_name='HistoricalLocations'
     )
