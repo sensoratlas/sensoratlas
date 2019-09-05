@@ -115,26 +115,23 @@ def geojson_to_geos(data):
     to geos geometry.
     """
 
-    def change_keys(obj, convert):
-        """
-        Recursively goes through the dictionary obj and replaces keys with the convert function.
-        """
+    def convert2geos(obj, fields):
         if isinstance(obj, dict):
             new = obj.__class__()
             for k, v in obj.items():
-                if k in convert:
+                if k in fields:
                     new[k] = GEOSGeometry(str(v))
                 else:
-                    new[k] = change_keys(v, convert)
+                    new[k] = convert2geos(v, fields)
         elif isinstance(obj, (list, set, tuple)):
-            new = obj.__class__(change_keys(v, convert) for v in obj)
+            new = obj.__class__(convert2geos(v, fields) for v in obj)
         else:
             return obj
         return new
 
-    geometries = ['location', 'feature', 'observedArea']
+    geometry_fields = ['location', 'feature', 'observedArea']
 
-    geometry_fixed = change_keys(data, geometries)
+    geometry_fixed = convert2geos(data, geometry_fields)
 
     return geometry_fixed
 
