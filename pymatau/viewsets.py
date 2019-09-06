@@ -525,12 +525,513 @@ class ViewSet(viewsets.ModelViewSet):
     """
     Overrides the DRF ModelViewSet methods of list, retrieve, and create, update.
     """
+    @action(detail=False, url_path=r'\$ref')
+    def associationLink(self, request, **kwargs):
+        """
+        Returns the address to an association link.
+        """
+        path = request._request.path
+        path_list = path.split('/')[3:-1]
+        d = self.queryset_methods(path_list, kwargs)
+        queryset = self.get_queryset().filter(**d)
+        queryset = self.filter_queryset(queryset)
+        d = []
+        for o in queryset:
+            d.append({'@iot.selfLink': reverse(self.basename + '-detail',
+                                               kwargs={'pk': o.pk},
+                                               request=request)})
+        return Response({"value": d})
+
+    @action(detail=True, url_path='name')
+    def get_name(self, request, version, **kwargs):
+        """
+        Returns the name JSON of the current entity
+        """
+        entity = self.get_object()
+        namae = {'name': entity.name}
+        return Response(namae)
+
+    @action(detail=True, url_path=r'name/\$value')
+    def get_name_value(self, request, version, **kwargs):
+        """
+        Returns the name value of the current entity
+        """
+        entity = self.get_object()
+        namae = entity.name
+        return Response(namae)
+
+    @action(detail=True, url_path='description')
+    def get_description(self, request, version, **kwargs):
+        """
+        Returns the description JSON of the current entity
+        """
+        entity = self.get_object()
+        descript = {'description': entity.description}
+        return Response(descript)
+
+    @action(detail=True, url_path=r'description/\$value')
+    def get_description_value(self, request, version, **kwargs):
+        """
+        Returns the description value of the current entity
+        """
+        entity = self.get_object()
+        descript = entity.description
+        return Response(descript)
+
+    @action(detail=True, url_path='properties')
+    def get_properties(self, request, version, **kwargs):
+        """
+        Returns the properties JSON of the current entity
+        """
+        entity = self.get_object()
+        properti = {'properties': entity.properties}
+        return Response(properti)
+
+    @action(detail=True, url_path=r'properties/\$value')
+    def get_properties_value(self, request, version, **kwargs):
+        """
+        Returns the properties value of the current entity
+        """
+        entity = self.get_object()
+        properti = entity.properties
+        return Response(properti)
+
+    @action(detail=True, url_path='encodingType')
+    def get_encodingType(self, request, version, **kwargs):
+        """
+        Returns the encoding type JSON of the current entity
+        """
+        entity = self.get_object()
+        encoding = {'encodingType': entity.encodingType}
+        return Response(encoding)
+
+    @action(detail=True, url_path=r'encodingType/\$value')
+    def get_encodingType_value(self, request, version, **kwargs):
+        """
+        Returns the encoding type value of the current entity
+        """
+        entity = self.get_object()
+        encoding = entity.encodingType
+        return Response(encoding)
+
+    @action(detail=True, url_path='location')
+    def get_location(self, request, version, **kwargs):
+        """
+        Returns the location JSON of the current entity
+        """
+        entity = self.get_object()
+        locat = {'location': json.loads(entity.location.geojson)}
+        return Response(locat)
+
+    @action(detail=True, url_path=r'location/\$value')
+    def get_location_value(self, request, version, **kwargs):
+        """
+        Returns the location value of the current entity
+        """
+        entity = self.get_object()
+        locat = json.loads(entity.location.geojson)
+        return Response(locat)
+
+    @action(detail=True, url_path='time')
+    def get_historicallocationtime(self, request, version, **kwargs):
+        """
+        Returns the historical location time JSON of the current entity
+        """
+        entity = self.get_object()
+        tim = {'time': entity.time}
+        return Response(tim)
+
+    @action(detail=True, url_path=r'time/\$value')
+    def get_historicallocationtime_value(self, request, version, **kwargs):
+        """
+        Returns the historical location time value of the current entity
+        """
+        entity = self.get_object()
+        tim = entity.time
+        return Response(tim)
+
+    @action(detail=True, url_path='unitOfMeasurement')
+    def get_unitOfMeasurement(self, request, **kwargs):
+        """
+        Returns the unitOfMeasurement JSON of the current entity
+        """
+        entity = self.get_object()
+        unitmeasure = {'unitOfMeasurement': entity.unitOfMeasurement}
+        return Response(unitmeasure)
+
+    @action(detail=True, url_path=r'unitOfMeasurement/\$value')
+    def get_unitOfMeasurement_value(self, request, **kwargs):
+        """
+        Returns the unitOfMeasurement value of the current entity
+        """
+        entity = self.get_object()
+        unitmeasure = entity.unitOfMeasurement
+        return Response(unitmeasure)
+
+    @action(detail=True, url_path='observationType')
+    def get_observationType(self, request, **kwargs):
+        """
+        Returns the observationType JSON of the current entity
+        """
+        entity = self.get_object()
+        observedtype = {'observationType': entity.observationType}
+        return Response(observedtype)
+
+    @action(detail=True, url_path=r'observationType/\$value')
+    def observationType_value(self, request, **kwargs):
+        """
+        Returns the observationType value of the current entity
+        """
+        entity = self.get_object()
+        observedtype = entity.observationType
+        return Response(observedtype)
+
+    @action(detail=True, url_path='observedArea')
+    def get_observedArea(self, request, **kwargs):
+        """
+        Returns the observedArea JSON of the current entity
+        """
+        entity = self.get_object()
+        if entity.observedArea:
+            observedarea = {'observedArea': json.loads(entity.observedArea.geojson)}
+        else:
+            observedarea = {'observedArea': None}
+        return Response(observedarea)
+
+    @action(detail=True, url_path=r'observedArea/\$value')
+    def observedArea_value(self, request, **kwargs):
+        """
+        Returns the observedArea value of the current entity
+        """
+        entity = self.get_object()
+        if entity.observedArea:
+            observedarea = json.loads(entity.observedArea.geojson)
+        else:
+            observedarea = None
+        return Response(observedarea)
+
+    @action(detail=True, url_path='phenomenonTime')
+    def get_phenomenonTime(self, request, **kwargs):
+        """
+        Returns the phenomenonTime JSON of the current entity
+        """
+        entity = self.get_object()
+        phenomenontime = {'phenomenonTime': entity.phenomenonTime}
+        return Response(phenomenontime)
+
+    @action(detail=True, url_path=r'phenomenonTime/\$value')
+    def phenomenonTime_value(self, request, **kwargs):
+        """
+        Returns the phenomenonTime value of the current entity
+        """
+        entity = self.get_object()
+        phenomenontime = entity.phenomenonTime
+        return Response(phenomenontime)
+
+    @action(detail=True, url_path='resultTime')
+    def get_resultTime(self, request, **kwargs):
+        """
+        Returns the resultTime JSON of the current entity
+        """
+        entity = self.get_object()
+        resulttime = {'resultTime': entity.resultTime}
+        return Response(resulttime)
+
+    @action(detail=True, url_path=r'resultTime/\$value')
+    def resultTime_value(self, request, **kwargs):
+        """
+        Returns the resultTime value of the current entity
+        """
+        entity = self.get_object()
+        resulttime = entity.resultTime
+        return Response(resulttime)
+
+    @action(detail=True, url_path='metadata')
+    def get_metadata(self, request, **kwargs):
+        """
+        Returns the metadata JSON of the current entity
+        """
+        entity = self.get_object()
+        metadat = {'metadata': entity.metadata}
+        return Response(metadat)
+
+    @action(detail=True, url_path=r'metadata/\$value')
+    def get_metadata_value(self, request, **kwargs):
+        """
+        Returns the metadata value of the current entity
+        """
+        entity = self.get_object()
+        metadat = entity.metadata
+        return Response(metadat)
+
+    @action(detail=True, url_path='definition')
+    def get_definition(self, request, **kwargs):
+        """
+        Returns the definition JSON of the current entity
+        """
+        entity = self.get_object()
+        definitn = {'definition': entity.definition}
+        return Response(definitn)
+
+    @action(detail=True, url_path=r'definition/\$value')
+    def get_definition_value(self, request, **kwargs):
+        """
+        Returns the definition value of the current entity
+        """
+        entity = self.get_object()
+        definitn = entity.definition
+        return Response(definitn)
+
+    @action(detail=True, url_path='result')
+    def get_result(self, request, **kwargs):
+        """
+        Returns the result JSON of the current entity
+        """
+        entity = self.get_object()
+        rezult = {'result': entity.result}
+        return Response(rezult)
+
+    @action(detail=True, url_path=r'result/\$value')
+    def get_result_value(self, request, **kwargs):
+        """
+        Returns the result value of the current entity
+        """
+        entity = self.get_object()
+        rezult = entity.result
+        return Response(rezult)
+
+    @action(detail=True, url_path='resultQuality')
+    def get_resultQuality(self, request, **kwargs):
+        """
+        Returns the resultQuality JSON of the current entity
+        """
+        entity = self.get_object()
+        resultquality = {'resultQuality': entity.resultQuality}
+        return Response(resultquality)
+
+    @action(detail=True, url_path=r'resultQuality/\$value')
+    def get_resultQuality_value(self, request, **kwargs):
+        """
+        Returns the resultQuality value of the current entity
+        """
+        entity = self.get_object()
+        resultquality = entity.resultQuality
+        return Response(resultquality)
+
+    @action(detail=True, url_path='validTime')
+    def get_validTime(self, request, **kwargs):
+        """
+        Returns the validTime JSON of the current entity
+        """
+        entity = self.get_object()
+        validtime = {'validTime': entity.validTime}
+        return Response(validtime)
+
+    @action(detail=True, url_path=r'validTime/\$value')
+    def get_validTime_value(self, request, **kwargs):
+        """
+        Returns the validTime value of the current entity
+        """
+        entity = self.get_object()
+        validtime = entity.validTime
+        return Response(validtime)
+
+    @action(detail=True, url_path='parameters')
+    def get_parameters(self, request, **kwargs):
+        """
+        Returns the parameters JSON of the current entity
+        """
+        entity = self.get_object()
+        parameters = {'parameters': entity.parameters}
+        return Response(parameters)
+
+    @action(detail=True, url_path=r'parameters/\$value')
+    def get_parameters_value(self, request, **kwargs):
+        """
+        Returns the parameters value of the current entity
+        """
+        entity = self.get_object()
+        parameters = entity.parameters
+        return Response(parameters)        \
+
+    @action(detail=True, url_path='feature')
+    def get_feature(self, request, **kwargs):
+        """
+        Returns the feature JSON of the current entity
+        """
+        entity = self.get_object()
+        feat = {'feature': json.loads(entity.feature.geojson)}
+        return Response(feat)
+
+    @action(detail=True, url_path=r'feature/\$value')
+    def get_feature_value(self, request, **kwargs):
+        """
+        Returns the feature value of the current entity
+        """
+        entity = self.get_object()
+        feat = json.loads(entity.feature.geojson)
+        return Response(feat)
+
+    def queryset_methods(self, path_list, kwargs):
+        """
+        Adds nested entites to the queryset of the current viewset, thereby
+        allowing nested expansions to be properly queried.
+        """
+        d = {}
+        if self.action == "list":
+            cv = INDICES[path_list[-1]]
+            path_list = [item.split('(')[0] for item
+                         in path_list if item[-1] == ')']
+        elif self.action == "retrieve":
+            cv = INDICES[path_list[-1].split('(')[0]]
+            path_list = [item.split('(')[0] for item in path_list[:-1]]
+        elif self.action == "associationLink":
+            cv = INDICES[path_list[-1]]
+            path_list = [item.split('(')[0] for item
+                         in path_list if item[-1] == ')']
+            try:
+                del kwargs['version']
+            except KeyError:
+                pass
+        # the following works because dictionaries are ordered in Python > 3.6
+        for i, (k, v) in enumerate(kwargs.items()):
+            if i == len(kwargs) - 1 and self.action == "retrieve":
+                break
+            path = list(reversed(path_list[i:]))
+            if self.action == "retrieve":
+                path = [x[:-1] if x[-1] == '(' else x for x in path]
+            IND = {}
+            try:
+                IND['featureofinterest_index'] = path.index('FeaturesOfInterest') + 1
+            except ValueError:
+                pass
+            try:
+                IND['featureofinterest_index'] = path.index('FeatureOfInterest') + 1
+            except ValueError:
+                pass
+            try:
+                IND['observedproperty_index'] = path.index('ObservedProperties') + 1
+            except ValueError:
+                pass
+            try:
+                IND['observedproperty_index'] = path.index('ObservedProperty') + 1
+            except ValueError:
+                pass
+            try:
+                IND['sensor_index'] = path.index('Sensors') + 1
+            except ValueError:
+                pass
+            try:
+                IND['sensor_index'] = path.index('Sensor') + 1
+            except ValueError:
+                pass
+            try:
+                IND['thing_index'] = path.index('Things') + 1
+            except ValueError:
+                pass
+            try:
+                IND['thing_index'] = path.index('Thing') + 1
+            except ValueError:
+                pass
+            try:
+                IND['datastream_index'] = path.index('Datastreams') + 1
+            except ValueError:
+                pass
+            try:
+                IND['datastream_index'] = path.index('Datastream') + 1
+            except ValueError:
+                pass
+            try:
+                IND['historicallocation_index'] = path.index('HistoricalLocations') + 1
+            except ValueError:
+                pass
+            try:
+                IND['observation_index'] = path.index('Observations') + 1
+            except ValueError:
+                pass
+            try:
+                IND['location_index'] = path.index('Locations') + 1
+            except ValueError:
+                pass
+            IND[cv] = 0
+            # Datastreams
+            try:
+                if IND['sensor_index'] > IND['datastream_index']:
+                    path[IND['sensor_index'] - 1] = 'Sensor'
+            except KeyError:
+                pass
+            try:
+                if IND['thing_index'] > IND['datastream_index']:
+                    path[IND['thing_index'] - 1] = 'Thing'
+            except KeyError:
+                pass
+            try:
+                if IND['observedproperty_index'] > IND['datastream_index']:
+                    path[IND['observedproperty_index'] - 1] = 'ObservedProperty'
+            except KeyError:
+                pass
+            # Locations
+            try:
+                if IND['thing_index'] > IND['location_index']:
+                    path[IND['thing_index'] - 1] = 'Things'
+            except KeyError:
+                pass
+            # Historical Locations
+            try:
+                if IND['location_index'] > IND['historicallocation_index']:
+                    path[IND['location_index'] - 1] = 'Locations'
+            except KeyError:
+                pass
+            try:
+                if IND['thing_index'] > IND['historicallocation_index']:
+                    path[IND['thing_index'] - 1] = 'Thing'
+            except KeyError:
+                pass
+            try:
+                if IND['datastream_index'] > IND['observation_index']:
+                    path[IND['datastream_index'] - 1] = 'Datastream'
+            except KeyError:
+                pass
+
+            try:
+                if IND['datastream_index'] > IND['sensor_index']:
+                    path[IND['datastream_index'] - 1] = 'Datastreams'
+            except KeyError:
+                pass
+
+            try:
+                if IND['datastream_index'] > IND['observedproperty_index']:
+                    path[IND['datastream_index'] - 1] = 'Datastreams'
+            except KeyError:
+                pass
+
+            try:
+                if IND['datastream_index'] > IND['thing_index']:
+                    path[IND['datastream_index'] - 1] = 'Datastreams'
+            except KeyError:
+                pass
+
+            try:
+                if IND['featureofinterest_index'] > IND['observation_index']:
+                    path[IND['featureofinterest_index'] - 1] = 'FeatureOfInterest'
+            except KeyError:
+                pass
+            try:
+                if IND['location_index'] < IND['thing_index'] and IND['location_index'] != 0:
+                    path[IND['location_index'] - 1] = 'Locations'
+                    if IND['thing_index'] > IND['historicallocation_index']:
+                        path[IND['thing_index'] - 1] = 'Things'
+            except KeyError:
+                pass
+
+            field = '__'.join(path)
+            d[field] = v
+        return d
+
     def list(self, request, version, **kwargs):
         path = request._request.path
         path_list = path.split('/')[3:]
-        method = 'list'
-        vs = NestedViewSet()
-        d = vs.queryset_methods(path_list, method, kwargs)
+        d = self.queryset_methods(path_list, kwargs)
         queryset = self.get_queryset().filter(**d)
         queryset = self.filter_queryset(queryset)
         page = self.paginate_queryset(queryset)
@@ -558,9 +1059,7 @@ class ViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, version, **kwargs):
         path = request._request.path
         path_list = path.split('/')[3:]
-        method = 'retrieve'
-        vs = NestedViewSet()
-        d = vs.queryset_methods(path_list, method, kwargs)
+        d = self.queryset_methods(path_list, kwargs)
         d['pk'] = kwargs['pk']
         queryset = self.get_queryset().filter(**d)
         queryset = self.filter_queryset(queryset)
@@ -629,753 +1128,3 @@ class ViewSet(viewsets.ModelViewSet):
                     )
         if request._request.method == 'PUT':
             raise BadRequest("Method PUT is not allowed. Please use PATCH.")
-
-
-class PropertyPath(object):
-    """
-    Address to a property of an entity.
-    """
-    class Thing:
-        @action(detail=False, url_path=r'\$ref')
-        def get_association_link(self, request, version, **kwargs):
-            """
-            Returns the address to an association link.
-            """
-            path = request._request.path
-            path_list = path.split('/')[3:-1]
-            method = "associationLink"
-            vs = NestedViewSet()
-            d = vs.queryset_methods(path_list, method, kwargs)
-            queryset = self.get_queryset().filter(**d)
-            queryset = self.filter_queryset(queryset)
-            d = []
-            for o in queryset:
-                d.append({'@iot.selfLink': reverse('thing-detail',
-                                                   kwargs={'pk': o.pk},
-                                                   request=request)})
-            return Response({"value": d})
-
-        @action(detail=True, url_path='name')
-        def get_name(self, request, version, **kwargs):
-            """
-            Returns the name JSON of the current entity
-            """
-            entity = self.get_object()
-            namae = {'name': entity.name}
-            return Response(namae)
-
-        @action(detail=True, url_path=r'name/\$value')
-        def get_name_value(self, request, version, **kwargs):
-            """
-            Returns the name value of the current entity
-            """
-            entity = self.get_object()
-            namae = entity.name
-            return Response(namae)
-
-        @action(detail=True, url_path='description')
-        def get_description(self, request, version, **kwargs):
-            """
-            Returns the description JSON of the current entity
-            """
-            entity = self.get_object()
-            descript = {'description': entity.description}
-            return Response(descript)
-
-        @action(detail=True, url_path=r'description/\$value')
-        def get_description_value(self, request, version, **kwargs):
-            """
-            Returns the description value of the current entity
-            """
-            entity = self.get_object()
-            descript = entity.description
-            return Response(descript)
-
-        @action(detail=True, url_path='properties')
-        def get_properties(self, request, version, **kwargs):
-            """
-            Returns the properties JSON of the current entity
-            """
-            entity = self.get_object()
-            properti = {'properties': entity.properties}
-            return Response(properti)
-
-        @action(detail=True, url_path=r'properties/\$value')
-        def get_properties_value(self, request, version, **kwargs):
-            """
-            Returns the properties value of the current entity
-            """
-            entity = self.get_object()
-            properti = entity.properties
-            return Response(properti)
-
-    class Location:
-        @action(detail=False, url_path=r'\$ref')
-        def get_association_link(self, request, version, **kwargs):
-            """
-            Returns the address to an association link.
-            """
-            path = request._request.path
-            path_list = path.split('/')[3:-1]
-            method = "associationLink"
-            vs = NestedViewSet()
-            d = vs.queryset_methods(path_list, method, kwargs)
-            queryset = self.get_queryset().filter(**d)
-            queryset = self.filter_queryset(queryset)
-            d = []
-            for o in queryset:
-                d.append({'@iot.selfLink': reverse('location-detail',
-                                                   kwargs={'pk': o.pk},
-                                                   request=request)})
-            return Response({"value": d})
-
-        @action(detail=True, url_path='name')
-        def get_name(self, request, version, **kwargs):
-            """
-            Returns the name JSON of the current entity
-            """
-            entity = self.get_object()
-            namae = {'name': entity.name}
-            return Response(namae)
-
-        @action(detail=True, url_path=r'name/\$value')
-        def get_name_value(self, request, version, **kwargs):
-            """
-            Returns the name value of the current entity
-            """
-            entity = self.get_object()
-            namae = entity.name
-            return Response(namae)
-
-        # get_description
-        @action(detail=True, url_path='description')
-        def get_description(self, request, version, **kwargs):
-            """
-            Returns the description JSON of the current entity
-            """
-            entity = self.get_object()
-            descript = {'description': entity.description}
-            return Response(descript)
-
-        @action(detail=True, url_path=r'description/\$value')
-        def get_description_value(self, request, version, **kwargs):
-            """
-            Returns the description value of the current entity
-            """
-            entity = self.get_object()
-            descript = entity.description
-            return Response(descript)
-
-        # get_encodingType
-        @action(detail=True, url_path='encodingType')
-        def get_encodingType(self, request, version, **kwargs):
-            """
-            Returns the encoding type JSON of the current entity
-            """
-            entity = self.get_object()
-            encoding = {'encodingType': entity.encodingType}
-            return Response(encoding)
-
-        @action(detail=True, url_path=r'encodingType/\$value')
-        def get_encodingType_value(self, request, version, **kwargs):
-            """
-            Returns the encoding type value of the current entity
-            """
-            entity = self.get_object()
-            encoding = entity.encodingType
-            return Response(encoding)
-
-        # get_location
-        @action(detail=True, url_path='location')
-        def get_location(self, request, version, **kwargs):
-            """
-            Returns the location JSON of the current entity
-            """
-            entity = self.get_object()
-            locat = {'location': json.loads(entity.location.geojson)}
-            return Response(locat)
-
-        @action(detail=True, url_path=r'location/\$value')
-        def get_location_value(self, request, version, **kwargs):
-            """
-            Returns the location value of the current entity
-            """
-            entity = self.get_object()
-            locat = json.loads(entity.location.geojson)
-            return Response(locat)
-
-    class HistoricalLocation:
-        @action(detail=False, url_path=r'\$ref')
-        def get_association_link(self, request, version, **kwargs):
-            """
-            Returns the address to an association link.
-            """
-            path = request._request.path
-            path_list = path.split('/')[3:-1]
-            method = "associationLink"
-            vs = NestedViewSet()
-            d = vs.queryset_methods(path_list, method, kwargs)
-            queryset = self.get_queryset().filter(**d)
-            queryset = self.filter_queryset(queryset)
-            d = []
-            for o in queryset:
-                d.append({'@iot.selfLink': reverse('historicallocation-detail',
-                                                   kwargs={'pk': o.pk},
-                                                   request=request)})
-            return Response({"value": d})
-
-        @action(detail=True, url_path='time')
-        def get_historicallocationtime(self, request, version, **kwargs):
-            """
-            Returns the historical location time JSON of the current entity
-            """
-            entity = self.get_object()
-            tim = {'time': entity.time}
-            return Response(tim)
-
-        @action(detail=True, url_path=r'time/\$value')
-        def get_historicallocationtime_value(self, request, version, **kwargs):
-            """
-            Returns the historical location time value of the current entity
-            """
-            entity = self.get_object()
-            tim = entity.time
-            return Response(tim)
-
-    class Datastream:
-        @action(detail=False, url_path=r'\$ref')
-        def get_association_link(self, request, version, **kwargs):
-            """
-            Returns the address to an association link.
-            """
-            path = request._request.path
-            path_list = path.split('/')[3:-1]
-            method = "associationLink"
-            vs = NestedViewSet()
-            d = vs.queryset_methods(path_list, method, kwargs)
-            queryset = self.get_queryset().filter(**d)
-            queryset = self.filter_queryset(queryset)
-            d = []
-            for o in queryset:
-                d.append({'@iot.selfLink': reverse('datastream-detail',
-                                                   kwargs={'pk': o.pk},
-                                                   request=request)})
-            return Response({"value": d})
-
-        @action(detail=True, url_path='name')
-        def get_name(self, request, version, **kwargs):
-            """
-            Returns the name JSON of the current entity
-            """
-            entity = self.get_object()
-            namae = {'name': entity.name}
-            return Response(namae)
-
-        @action(detail=True, url_path=r'name/\$value')
-        def get_name_value(self, request, **kwargs):
-            """
-            Returns the name value of the current entity
-            """
-            entity = self.get_object()
-            namae = entity.name
-            return Response(namae)
-
-        @action(detail=True, url_path='description')
-        def get_description(self, request, **kwargs):
-            """
-            Returns the description JSON of the current entity
-            """
-            entity = self.get_object()
-            descript = {'description': entity.description}
-            return Response(descript)
-
-        @action(detail=True, url_path=r'description/\$value')
-        def get_description_value(self, request, **kwargs):
-            """
-            Returns the description value of the current entity
-            """
-            entity = self.get_object()
-            descript = entity.description
-            return Response(descript)
-
-        @action(detail=True, url_path='unitOfMeasurement')
-        def get_unitOfMeasurement(self, request, **kwargs):
-            """
-            Returns the unitOfMeasurement JSON of the current entity
-            """
-            entity = self.get_object()
-            unitmeasure = {'unitOfMeasurement': entity.unitOfMeasurement}
-            return Response(unitmeasure)
-
-        @action(detail=True, url_path=r'unitOfMeasurement/\$value')
-        def get_unitOfMeasurement_value(self, request, **kwargs):
-            """
-            Returns the unitOfMeasurement value of the current entity
-            """
-            entity = self.get_object()
-            unitmeasure = entity.unitOfMeasurement
-            return Response(unitmeasure)
-
-        @action(detail=True, url_path='observationType')
-        def get_observationType(self, request, **kwargs):
-            """
-            Returns the observationType JSON of the current entity
-            """
-            entity = self.get_object()
-            observedtype = {'observationType': entity.observationType}
-            return Response(observedtype)
-
-        @action(detail=True, url_path=r'observationType/\$value')
-        def observationType_value(self, request, **kwargs):
-            """
-            Returns the observationType value of the current entity
-            """
-            entity = self.get_object()
-            observedtype = entity.observationType
-            return Response(observedtype)
-
-        @action(detail=True, url_path='observedArea')
-        def get_observedArea(self, request, **kwargs):
-            """
-            Returns the observedArea JSON of the current entity
-            """
-            entity = self.get_object()
-            if entity.observedArea:
-                observedarea = {'observedArea': json.loads(entity.observedArea.geojson)}
-            else:
-                observedarea = {'observedArea': None}
-            return Response(observedarea)
-
-        @action(detail=True, url_path=r'observedArea/\$value')
-        def observedArea_value(self, request, **kwargs):
-            """
-            Returns the observedArea value of the current entity
-            """
-            entity = self.get_object()
-            if entity.observedArea:
-                observedarea = json.loads(entity.observedArea.geojson)
-            else:
-                observedarea = None
-            return Response(observedarea)
-
-        @action(detail=True, url_path='phenomenonTime')
-        def get_phenomenonTime(self, request, **kwargs):
-            """
-            Returns the phenomenonTime JSON of the current entity
-            """
-            entity = self.get_object()
-            phenomenontime = {'phenomenonTime': entity.phenomenonTime}
-            return Response(phenomenontime)
-
-        @action(detail=True, url_path=r'phenomenonTime/\$value')
-        def phenomenonTime_value(self, request, **kwargs):
-            """
-            Returns the phenomenonTime value of the current entity
-            """
-            entity = self.get_object()
-            phenomenontime = entity.phenomenonTime
-            return Response(phenomenontime)
-
-        @action(detail=True, url_path='resultTime')
-        def get_resultTime(self, request, **kwargs):
-            """
-            Returns the resultTime JSON of the current entity
-            """
-            entity = self.get_object()
-            resulttime = {'resultTime': entity.resultTime}
-            return Response(resulttime)
-
-        @action(detail=True, url_path=r'resultTime/\$value')
-        def resultTime_value(self, request, **kwargs):
-            """
-            Returns the resultTime value of the current entity
-            """
-            entity = self.get_object()
-            resulttime = entity.resultTime
-            return Response(resulttime)
-
-    class Sensor:
-        @action(detail=False, url_path=r'\$ref')
-        def get_association_link(self, request, **kwargs):
-            """
-            Returns the address to an association link.
-            """
-            path = request._request.path
-            path_list = path.split('/')[3:-1]
-            method = "associationLink"
-            vs = NestedViewSet()
-            d = vs.queryset_methods(path_list, method, kwargs)
-            queryset = self.get_queryset().filter(**d)
-            queryset = self.filter_queryset(queryset)
-            d = []
-            for o in queryset:
-                d.append({'@iot.selfLink': reverse('sensor-detail',
-                                                   kwargs={'pk': o.pk},
-                                                   request=request)})
-            return Response({"value": d})
-
-        @action(detail=True, url_path='name')
-        def get_name(self, request, version, **kwargs):
-            """
-            Returns the name JSON of the current entity
-            """
-            entity = self.get_object()
-            namae = {'name': entity.name}
-            return Response(namae)
-
-        @action(detail=True, url_path=r'name/\$value')
-        def get_name_value(self, request, version, **kwargs):
-            """
-            Returns the name value of the current entity
-            """
-            entity = self.get_object()
-            namae = entity.name
-            return Response(namae)
-
-        @action(detail=True, url_path='description')
-        def get_description(self, request, version, **kwargs):
-            """
-            Returns the description JSON of the current entity
-            """
-            entity = self.get_object()
-            descript = {'description': entity.description}
-            return Response(descript)
-
-        @action(detail=True, url_path=r'description/\$value')
-        def get_description_value(self, request, version, **kwargs):
-            """
-            Returns the description value of the current entity
-            """
-            entity = self.get_object()
-            descript = entity.description
-            return Response(descript)
-
-        @action(detail=True, url_path='encodingType')
-        def get_encodingType(self, request, **kwargs):
-            """
-            Returns the encoding type JSON of the current entity
-            """
-            entity = self.get_object()
-            encoding = {'encodingType': entity.encodingType}
-            return Response(encoding)
-
-        @action(detail=True, url_path=r'encodingType/\$value')
-        def get_encodingType_value(self, request, **kwargs):
-            """
-            Returns the encoding type value of the current entity
-            """
-            entity = self.get_object()
-            encoding = entity.encodingType
-            return Response(encoding)
-
-        @action(detail=True, url_path='metadata')
-        def get_metadata(self, request, **kwargs):
-            """
-            Returns the metadata JSON of the current entity
-            """
-            entity = self.get_object()
-            metadat = {'metadata': entity.metadata}
-            return Response(metadat)
-
-        @action(detail=True, url_path=r'metadata/\$value')
-        def get_metadata_value(self, request, **kwargs):
-            """
-            Returns the metadata value of the current entity
-            """
-            entity = self.get_object()
-            metadat = entity.metadata
-            return Response(metadat)
-
-    class ObservedProperty:
-        @action(detail=False, url_path=r'\$ref')
-        def get_association_link(self, request, **kwargs):
-            """
-            Returns the address to an association link.
-            """
-            path = request._request.path
-            path_list = path.split('/')[3:-1]
-            method = "associationLink"
-            vs = NestedViewSet()
-            d = vs.queryset_methods(path_list, method, kwargs)
-            queryset = self.get_queryset().filter(**d)
-            queryset = self.filter_queryset(queryset)
-            d = []
-            for o in queryset:
-                d.append({'@iot.selfLink': reverse('observedproperty-detail',
-                                                   kwargs={'pk': o.pk},
-                                                   request=request)})
-            return Response({"value": d})
-
-        @action(detail=True, url_path='name')
-        def get_name(self, request, version, **kwargs):
-            """
-            Returns the name JSON of the current entity
-            """
-            entity = self.get_object()
-            namae = {'name': entity.name}
-            return Response(namae)
-
-        @action(detail=True, url_path=r'name/\$value')
-        def get_name_value(self, request, version, **kwargs):
-            """
-            Returns the name value of the current entity
-            """
-            entity = self.get_object()
-            namae = entity.name
-            return Response(namae)
-
-        @action(detail=True, url_path='definition')
-        def get_definition(self, request, **kwargs):
-            """
-            Returns the definition JSON of the current entity
-            """
-            entity = self.get_object()
-            definitn = {'definition': entity.definition}
-            return Response(definitn)
-
-        @action(detail=True, url_path=r'definition/\$value')
-        def get_definition_value(self, request, **kwargs):
-            """
-            Returns the definition value of the current entity
-            """
-            entity = self.get_object()
-            definitn = entity.definition
-            return Response(definitn)
-
-        @action(detail=True, url_path='description')
-        def get_description(self, request, version, **kwargs):
-            """
-            Returns the description JSON of the current entity
-            """
-            entity = self.get_object()
-            descript = {'description': entity.description}
-            return Response(descript)
-
-        @action(detail=True, url_path=r'description/\$value')
-        def get_description_value(self, request, version, **kwargs):
-            """
-            Returns the description value of the current entity
-            """
-            entity = self.get_object()
-            descript = entity.description
-            return Response(descript)
-
-    class Observation:
-        @action(detail=False, url_path=r'\$ref')
-        def get_association_link(self, request, **kwargs):
-            """
-            Returns the address to an association link.
-            """
-            path = request._request.path
-            path_list = path.split('/')[3:-1]
-            method = "associationLink"
-            vs = NestedViewSet()
-            d = vs.queryset_methods(path_list, method, kwargs)
-            queryset = self.get_queryset().filter(**d)
-            queryset = self.filter_queryset(queryset)
-            d = []
-            for o in queryset:
-                d.append({'@iot.selfLink': reverse('observation-detail',
-                                                   kwargs={'pk': o.pk},
-                                                   request=request)})
-            return Response({"value": d})
-
-        @action(detail=True, url_path='phenomenonTime')
-        def get_phenomenonTime(self, request, **kwargs):
-            """
-            Returns the phenomenonTime JSON of the current entity
-            """
-            entity = self.get_object()
-            phenomenontime = {'phenomenonTime': entity.phenomenonTime}
-            return Response(phenomenontime)
-
-        @action(detail=True, url_path=r'phenomenonTime/\$value')
-        def get_phenomenonTime_value(self, request, **kwargs):
-            """
-            Returns the phenomenonTime value of the current entity
-            """
-            entity = self.get_object()
-            phenomenontime = entity.phenomenonTime
-            return Response(phenomenontime)
-
-        @action(detail=True, url_path='result')
-        def get_result(self, request, **kwargs):
-            """
-            Returns the result JSON of the current entity
-            """
-            entity = self.get_object()
-            rezult = {'result': entity.result}
-            return Response(rezult)
-
-        @action(detail=True, url_path=r'result/\$value')
-        def get_result_value(self, request, **kwargs):
-            """
-            Returns the result value of the current entity
-            """
-            entity = self.get_object()
-            rezult = entity.result
-            return Response(rezult)
-
-        @action(detail=True, url_path='resultTime')
-        def get_resultTime(self, request, **kwargs):
-            """
-            Returns the resultTime JSON of the current entity
-            """
-            entity = self.get_object()
-            resulttime = {'resultTime': entity.resultTime}
-            return Response(resulttime)
-
-        @action(detail=True, url_path=r'resultTime/\$value')
-        def get_resultTime_value(self, request, **kwargs):
-            """
-            Returns the resultTime value of the current entity
-            """
-            entity = self.get_object()
-            resulttime = entity.resultTime
-            return Response(resulttime)
-
-        @action(detail=True, url_path='resultQuality')
-        def get_resultQuality(self, request, **kwargs):
-            """
-            Returns the resultQuality JSON of the current entity
-            """
-            entity = self.get_object()
-            resultquality = {'resultQuality': entity.resultQuality}
-            return Response(resultquality)
-
-        @action(detail=True, url_path=r'resultQuality/\$value')
-        def get_resultQuality_value(self, request, **kwargs):
-            """
-            Returns the resultQuality value of the current entity
-            """
-            entity = self.get_object()
-            resultquality = entity.resultQuality
-            return Response(resultquality)
-
-        @action(detail=True, url_path='validTime')
-        def get_validTime(self, request, **kwargs):
-            """
-            Returns the validTime JSON of the current entity
-            """
-            entity = self.get_object()
-            validtime = {'validTime': entity.validTime}
-            return Response(validtime)
-
-        @action(detail=True, url_path=r'validTime/\$value')
-        def get_validTime_value(self, request, **kwargs):
-            """
-            Returns the validTime value of the current entity
-            """
-            entity = self.get_object()
-            validtime = entity.validTime
-            return Response(validtime)
-
-        @action(detail=True, url_path='parameters')
-        def get_parameters(self, request, **kwargs):
-            """
-            Returns the parameters JSON of the current entity
-            """
-            entity = self.get_object()
-            parameters = {'parameters': entity.parameters}
-            return Response(parameters)
-
-        @action(detail=True, url_path=r'parameters/\$value')
-        def get_parameters_value(self, request, **kwargs):
-            """
-            Returns the parameters value of the current entity
-            """
-            entity = self.get_object()
-            parameters = entity.parameters
-            return Response(parameters)
-
-    class FeatureOfInterest:
-        @action(detail=False, url_path=r'\$ref')
-        def get_association_link(self, request, **kwargs):
-            """
-            Returns the address to an association link.
-            """
-            path = request._request.path
-            path_list = path.split('/')[3:-1]
-            method = "associationLink"
-            vs = NestedViewSet()
-            d = vs.queryset_methods(path_list, method, kwargs)
-            queryset = self.get_queryset().filter(**d)
-            queryset = self.filter_queryset(queryset)
-            d = []
-            for o in queryset:
-                d.append({'@iot.selfLink': reverse('featureofinterest-detail',
-                                                   kwargs={'pk': o.pk},
-                                                   request=request)})
-            return Response({"value": d})
-
-        @action(detail=True, url_path='name')
-        def get_name(self, request, version, **kwargs):
-            """
-            Returns the name JSON of the current entity
-            """
-            entity = self.get_object()
-            namae = {'name': entity.name}
-            return Response(namae)
-
-        @action(detail=True, url_path=r'name/\$value')
-        def get_name_value(self, request, version, **kwargs):
-            """
-            Returns the name value of the current entity
-            """
-            entity = self.get_object()
-            namae = entity.name
-            return Response(namae)
-
-        @action(detail=True, url_path='description')
-        def get_description(self, request, version, **kwargs):
-            """
-            Returns the description JSON of the current entity
-            """
-            entity = self.get_object()
-            descript = {'description': entity.description}
-            return Response(descript)
-
-        @action(detail=True, url_path=r'description/\$value')
-        def get_description_value(self, request, version, **kwargs):
-            """
-            Returns the description value of the current entity
-            """
-            entity = self.get_object()
-            descript = entity.description
-            return Response(descript)
-
-        @action(detail=True, url_path='encodingType')
-        def get_encodingType(self, request, **kwargs):
-            """
-            Returns the encoding type JSON of the current entity
-            """
-            entity = self.get_object()
-            encoding = {'encodingType': entity.encodingType}
-            return Response(encoding)
-
-        @action(detail=True, url_path=r'encodingType/\$value')
-        def get_encodingType_value(self, request, **kwargs):
-            """
-            Returns the encoding type value of the current entity
-            """
-            entity = self.get_object()
-            encoding = entity.encodingType
-            return Response(encoding)
-
-        @action(detail=True, url_path='feature')
-        def get_feature(self, request, **kwargs):
-            """
-            Returns the feature JSON of the current entity
-            """
-            entity = self.get_object()
-            feat = {'feature': json.loads(entity.feature.geojson)}
-            return Response(feat)
-
-        @action(detail=True, url_path=r'feature/\$value')
-        def get_feature_value(self, request, **kwargs):
-            """
-            Returns the feature value of the current entity
-            """
-            entity = self.get_object()
-            feat = json.loads(entity.feature.geojson)
-            return Response(feat)

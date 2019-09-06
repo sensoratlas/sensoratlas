@@ -2472,6 +2472,7 @@ class A_1_10(APITestCase):
                           kwargs={'version': 'v1.0',
                                   'pk': observation.id
                                   })
+
         for property in properties:
             url = baseurl + '/' + property
             response = self.client.get(url, format='json')
