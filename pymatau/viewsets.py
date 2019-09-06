@@ -882,9 +882,11 @@ class ViewSet(viewsets.ModelViewSet):
             cv = INDICES[path_list[-1]]
             path_list = [item.split('(')[0] for item
                          in path_list if item[-1] == ')']
+
         elif self.action == "retrieve":
             cv = INDICES[path_list[-1].split('(')[0]]
             path_list = [item.split('(')[0] for item in path_list[:-1]]
+
         elif self.action == "associationLink":
             cv = INDICES[path_list[-1]]
             path_list = [item.split('(')[0] for item
@@ -893,6 +895,7 @@ class ViewSet(viewsets.ModelViewSet):
                 del kwargs['version']
             except KeyError:
                 pass
+        # print(path_list)
         # the following works because dictionaries are ordered in Python > 3.6
         for i, (k, v) in enumerate(kwargs.items()):
             if i == len(kwargs) - 1 and self.action == "retrieve":
@@ -1031,6 +1034,8 @@ class ViewSet(viewsets.ModelViewSet):
     def list(self, request, version, **kwargs):
         path = request._request.path
         path_list = path.split('/')[3:]
+        # print(kwargs)
+        # print(path_list)
         d = self.queryset_methods(path_list, kwargs)
         queryset = self.get_queryset().filter(**d)
         queryset = self.filter_queryset(queryset)

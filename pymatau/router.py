@@ -13,13 +13,12 @@ from collections import OrderedDict
 IDENTIFIER_REGEX = re.compile(r"^[^\d\W]\w*$", re.UNICODE)
 
 
-class NestedMixin(object):
+class NestedMixin:
     def __init__(self, parent_router, parent_prefix, *args, **kwargs):
         self.parent_router = parent_router
         self.parent_prefix = parent_prefix
         self.nest_count = getattr(parent_router, 'nest_count', 0) + 1
-        self.nest_prefix = kwargs.pop('lookup', 'nested_%i' % self.nest_count)\
-            + '_'
+        self.nest_prefix = kwargs.pop('lookup', self.parent_prefix) + '_'
 
         super(NestedMixin, self).__init__(*args, **kwargs)
         if 'trailing_slash' not in kwargs:
