@@ -11,7 +11,7 @@ from .errors import NotImplemented501, BadRequest, Unprocessable
 from django.utils import timezone
 from datetime import datetime
 from .functions import QueryFunctions, QueryOperations
-
+from .viewsets import MODEL_KEYS
 
 def lexer(string):  # TODO: refactor
     """
@@ -165,7 +165,9 @@ def query_mapping(y, index):
         return func(parse_function[1], index=index)
 
     elif len(y) == 3:  # valid must be comparison
-        operandA = y[0].replace('/', '__')
+        operandA = y[0].split("/")
+        operandA = [MODEL_KEYS[x] if x in MODEL_KEYS else x for x in operandA]
+        operandA = '__'.join(operandA)
         operator = QueryOperations.comparison_operators[y[1]]
         operandB = y[2]
 

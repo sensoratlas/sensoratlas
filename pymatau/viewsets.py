@@ -48,7 +48,7 @@ REQUIRED_FIELDS = {
     'historicallocation': [
         'time',
         'Thing',
-        'Locations'
+        'Location'
     ],
     'location': [
         'name',
@@ -189,6 +189,7 @@ class NestedViewSet:
     def __init__(self, **kwargs):
         if kwargs:
             self.data = process_data(kwargs["data"], kwargs["basename"], kwargs["url_kwargs"])
+            self.data = {MODEL_KEYS[k] if k in MODEL_KEYS else k: v for k, v in self.data.items()}
 
     def get_or_create_children(self, data, given_entity, **kwargs):
         entity = MODEL_KEYS[given_entity]
@@ -337,7 +338,7 @@ class NestedViewSet:
             datastream = self.get_or_create_children(ds, "Datastream")
         if datastream:
             try:
-                location = datastream.Thing.Locations.get(
+                location = datastream.Thing.Location.get(
                             encodingType=DEFAULT_ENCODING
                             )
                 featureofinterest = FeatureOfInterest.objects.create(
@@ -734,8 +735,7 @@ class ViewSet(viewsets.ModelViewSet):
         queryset = self.filter_queryset(queryset)
 
         page = self.paginate_queryset(queryset)
-        single_link = ['Thing', 'Sensor', 'ObservedProperty', 'Datastream',
-                       'FeatureOfInterest']
+        single_link = ['Thing', 'Sensor', 'ObservedProperty', 'Datastream', 'FeatureOfInterest']
 
         path_list = list(kwargs.keys())
         if "pk" in path_list:
@@ -782,7 +782,9 @@ class ViewSet(viewsets.ModelViewSet):
         if isinstance(data, list):
             raise Unprocessable()
         basename = self.basename
+
         vs = NestedViewSet(data=data, basename=basename, url_kwargs=kwargs)
+
         if basename == 'observation' and 'FeatureOfInterest' not in vs.data:
             foi = vs.create_missing_featureofinterest()
             vs.data["FeatureOfInterest"] = {"@iot.id": foi.id}

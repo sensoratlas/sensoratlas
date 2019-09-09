@@ -1359,8 +1359,7 @@ class A_2_1_6(APITestCase):
         self.assertEqual(response.data['value'][0]['result'], 1)
 
     def test_multiple3(self):
-        query1 = "$filter=Datastreams/Observations/FeatureOfInterest" + \
-            "/name eq Usidore and substringof('thing',description)"
+        query1 = "$filter=Datastreams/Observations/FeatureOfInterest/name eq Usidore and substringof('thing',description)"
         query2 = '$top=1'
         response = self.client.get(
             '/api/v1.0/Things?' + query1 + '&' + query2)
