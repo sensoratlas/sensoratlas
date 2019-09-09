@@ -12,6 +12,7 @@ from .errors import Unprocessable, BadRequest
 import dateutil.parser
 from django.core.exceptions import ObjectDoesNotExist, FieldError
 from django.apps import apps
+import re
 
 
 MODEL_KEYS = {
@@ -42,21 +43,6 @@ NAME_LOOKUP = {
     'observedproperty': 'ObservedProperties',
     'observation': 'Observations',
     'featureofinterest': 'FeaturesOfInterest'
-}
-INDICES = {
-    'HistoricalLocations': 'historicallocation_index',
-    'Locations': 'location_index',
-    'Things': 'thing_index',
-    'Thing': 'thing_index',
-    'Datastreams': 'datastream_index',
-    'Datastream': 'datastream_index',
-    'ObservedProperties': 'observedproperty_index',
-    'ObservedProperty': 'observedproperty_index',
-    'Sensors': 'sensor_index',
-    'Sensor': 'sensor_index',
-    'Observations': 'observation_index',
-    'FeaturesOfInterest': 'featureofinterest_index',
-    'FeatureOfInterest': 'featureofinterest_index'
 }
 REQUIRED_FIELDS = {
     'historicallocation': [
@@ -231,7 +217,7 @@ class NestedViewSet:
                                 children.append(child)
                             data.pop(key)
                             many_children = children
-                            child_entity = key
+                            child_entity = MODEL_KEYS[key]
 
                 # TODO: check for other exceptions
                 try:
@@ -309,162 +295,6 @@ class NestedViewSet:
                     raise BadRequest()
             return entity_list
 
-    def queryset_methods(self, path_list, method, kwargs):
-        """
-        Adds nested entites to the queryset of the current viewset, thereby
-        allowing nested expansions to be properly queried.
-        """
-        d = {}
-        if method == "list":
-            cv = INDICES[path_list[-1]]
-            path_list = [item.split('(')[0] for item
-                         in path_list if item[-1] == ')']
-        elif method == "retrieve":
-            cv = INDICES[path_list[-1].split('(')[0]]
-            path_list = [item.split('(')[0] for item in path_list[:-1]]
-        elif method == "associationLink":
-            cv = INDICES[path_list[-1]]
-            path_list = [item.split('(')[0] for item
-                         in path_list if item[-1] == ')']
-            try:
-                del kwargs['version']
-            except KeyError:
-                pass
-        # the following works because dictionaries are ordered in Python > 3.6
-        for i, (k, v) in enumerate(kwargs.items()):
-            if i == len(kwargs)-1 and method == "retrieve":
-                break
-            path = list(reversed(path_list[i:]))
-            if method == "retrieve":
-                path = [x[:-1] if x[-1] == '(' else x for x in path]
-            IND = {}
-            try:
-                IND['featureofinterest_index'] = path.index('FeaturesOfInterest') + 1
-            except ValueError:
-                pass
-            try:
-                IND['featureofinterest_index'] = path.index('FeatureOfInterest') + 1
-            except ValueError:
-                pass
-            try:
-                IND['observedproperty_index'] = path.index('ObservedProperties') + 1
-            except ValueError:
-                pass
-            try:
-                IND['observedproperty_index'] = path.index('ObservedProperty') + 1
-            except ValueError:
-                pass
-            try:
-                IND['sensor_index'] = path.index('Sensors') + 1
-            except ValueError:
-                pass
-            try:
-                IND['sensor_index'] = path.index('Sensor') + 1
-            except ValueError:
-                pass
-            try:
-                IND['thing_index'] = path.index('Things') + 1
-            except ValueError:
-                pass
-            try:
-                IND['thing_index'] = path.index('Thing') + 1
-            except ValueError:
-                pass
-            try:
-                IND['datastream_index'] = path.index('Datastreams') + 1
-            except ValueError:
-                pass
-            try:
-                IND['datastream_index'] = path.index('Datastream') + 1
-            except ValueError:
-                pass
-            try:
-                IND['historicallocation_index'] = path.index('HistoricalLocations') + 1
-            except ValueError:
-                pass
-            try:
-                IND['observation_index'] = path.index('Observations') + 1
-            except ValueError:
-                pass
-            try:
-                IND['location_index'] = path.index('Locations') + 1
-            except ValueError:
-                pass
-            IND[cv] = 0
-            # Datastreams
-            try:
-                if IND['sensor_index'] > IND['datastream_index']:
-                    path[IND['sensor_index'] - 1] = 'Sensor'
-            except KeyError:
-                pass
-            try:
-                if IND['thing_index'] > IND['datastream_index']:
-                    path[IND['thing_index'] - 1] = 'Thing'
-            except KeyError:
-                pass
-            try:
-                if IND['observedproperty_index'] > IND['datastream_index']:
-                    path[IND['observedproperty_index'] - 1] = 'ObservedProperty'
-            except KeyError:
-                pass
-            # Locations
-            try:
-                if IND['thing_index'] > IND['location_index']:
-                    path[IND['thing_index'] - 1] = 'Things'
-            except KeyError:
-                pass
-            # Historical Locations
-            try:
-                if IND['location_index'] > IND['historicallocation_index']:
-                    path[IND['location_index'] - 1] = 'Locations'
-            except KeyError:
-                pass
-            try:
-                if IND['thing_index'] > IND['historicallocation_index']:
-                    path[IND['thing_index'] - 1] = 'Thing'
-            except KeyError:
-                pass
-            try:
-                if IND['datastream_index'] > IND['observation_index']:
-                    path[IND['datastream_index'] - 1] = 'Datastream'
-            except KeyError:
-                pass
-
-            try:
-                if IND['datastream_index'] > IND['sensor_index']:
-                    path[IND['datastream_index'] - 1] = 'Datastreams'
-            except KeyError:
-                pass
-
-            try:
-                if IND['datastream_index'] > IND['observedproperty_index']:
-                    path[IND['datastream_index'] - 1] = 'Datastreams'
-            except KeyError:
-                pass
-
-            try:
-                if IND['datastream_index'] > IND['thing_index']:
-                    path[IND['datastream_index'] - 1] = 'Datastreams'
-            except KeyError:
-                pass
-
-            try:
-                if IND['featureofinterest_index'] > IND['observation_index']:
-                    path[IND['featureofinterest_index'] - 1] = 'FeatureOfInterest'
-            except KeyError:
-                pass
-            try:
-                if IND['location_index'] < IND['thing_index'] and IND['location_index'] != 0:
-                    path[IND['location_index'] - 1] = 'Locations'
-                    if IND['thing_index'] > IND['historicallocation_index']:
-                        path[IND['thing_index'] - 1] = 'Things'
-            except KeyError:
-                pass
-
-            field = '__'.join(path)
-            d[field] = v
-        return d
-
     def get_or_update_related(self):
         d = {}
         for key in MODEL_KEYS:
@@ -530,9 +360,7 @@ class ViewSet(viewsets.ModelViewSet):
         """
         Returns the address to an association link.
         """
-        path = request._request.path
-        path_list = path.split('/')[3:-1]
-        d = self.queryset_methods(path_list, kwargs)
+        d = self.queryset_methods(kwargs)
         queryset = self.get_queryset().filter(**d)
         queryset = self.filter_queryset(queryset)
         d = []
@@ -872,176 +700,49 @@ class ViewSet(viewsets.ModelViewSet):
         feat = json.loads(entity.feature.geojson)
         return Response(feat)
 
-    def queryset_methods(self, path_list, kwargs):
+    def queryset_methods(self, kwargs):
         """
         Adds nested entites to the queryset of the current viewset, thereby
         allowing nested expansions to be properly queried.
         """
         d = {}
-        if self.action == "list":
-            cv = INDICES[path_list[-1]]
-            path_list = [item.split('(')[0] for item
-                         in path_list if item[-1] == ')']
+        kwargs.pop('version', None)
+        path_list = list(kwargs.keys())
 
-        elif self.action == "retrieve":
-            cv = INDICES[path_list[-1].split('(')[0]]
-            path_list = [item.split('(')[0] for item in path_list[:-1]]
+        if "pk" in path_list:
+            path_list.remove("pk")
 
-        elif self.action == "associationLink":
-            cv = INDICES[path_list[-1]]
-            path_list = [item.split('(')[0] for item
-                         in path_list if item[-1] == ')']
-            try:
-                del kwargs['version']
-            except KeyError:
-                pass
-        # print(path_list)
-        # the following works because dictionaries are ordered in Python > 3.6
+        p = re.compile('|'.join(map(re.escape, ["_pk"])))
+        path_list = [p.sub('', s) for s in path_list]
+
         for i, (k, v) in enumerate(kwargs.items()):
             if i == len(kwargs) - 1 and self.action == "retrieve":
                 break
+
             path = list(reversed(path_list[i:]))
-            if self.action == "retrieve":
-                path = [x[:-1] if x[-1] == '(' else x for x in path]
-            IND = {}
-            try:
-                IND['featureofinterest_index'] = path.index('FeaturesOfInterest') + 1
-            except ValueError:
-                pass
-            try:
-                IND['featureofinterest_index'] = path.index('FeatureOfInterest') + 1
-            except ValueError:
-                pass
-            try:
-                IND['observedproperty_index'] = path.index('ObservedProperties') + 1
-            except ValueError:
-                pass
-            try:
-                IND['observedproperty_index'] = path.index('ObservedProperty') + 1
-            except ValueError:
-                pass
-            try:
-                IND['sensor_index'] = path.index('Sensors') + 1
-            except ValueError:
-                pass
-            try:
-                IND['sensor_index'] = path.index('Sensor') + 1
-            except ValueError:
-                pass
-            try:
-                IND['thing_index'] = path.index('Things') + 1
-            except ValueError:
-                pass
-            try:
-                IND['thing_index'] = path.index('Thing') + 1
-            except ValueError:
-                pass
-            try:
-                IND['datastream_index'] = path.index('Datastreams') + 1
-            except ValueError:
-                pass
-            try:
-                IND['datastream_index'] = path.index('Datastream') + 1
-            except ValueError:
-                pass
-            try:
-                IND['historicallocation_index'] = path.index('HistoricalLocations') + 1
-            except ValueError:
-                pass
-            try:
-                IND['observation_index'] = path.index('Observations') + 1
-            except ValueError:
-                pass
-            try:
-                IND['location_index'] = path.index('Locations') + 1
-            except ValueError:
-                pass
-            IND[cv] = 0
-            # Datastreams
-            try:
-                if IND['sensor_index'] > IND['datastream_index']:
-                    path[IND['sensor_index'] - 1] = 'Sensor'
-            except KeyError:
-                pass
-            try:
-                if IND['thing_index'] > IND['datastream_index']:
-                    path[IND['thing_index'] - 1] = 'Thing'
-            except KeyError:
-                pass
-            try:
-                if IND['observedproperty_index'] > IND['datastream_index']:
-                    path[IND['observedproperty_index'] - 1] = 'ObservedProperty'
-            except KeyError:
-                pass
-            # Locations
-            try:
-                if IND['thing_index'] > IND['location_index']:
-                    path[IND['thing_index'] - 1] = 'Things'
-            except KeyError:
-                pass
-            # Historical Locations
-            try:
-                if IND['location_index'] > IND['historicallocation_index']:
-                    path[IND['location_index'] - 1] = 'Locations'
-            except KeyError:
-                pass
-            try:
-                if IND['thing_index'] > IND['historicallocation_index']:
-                    path[IND['thing_index'] - 1] = 'Thing'
-            except KeyError:
-                pass
-            try:
-                if IND['datastream_index'] > IND['observation_index']:
-                    path[IND['datastream_index'] - 1] = 'Datastream'
-            except KeyError:
-                pass
-
-            try:
-                if IND['datastream_index'] > IND['sensor_index']:
-                    path[IND['datastream_index'] - 1] = 'Datastreams'
-            except KeyError:
-                pass
-
-            try:
-                if IND['datastream_index'] > IND['observedproperty_index']:
-                    path[IND['datastream_index'] - 1] = 'Datastreams'
-            except KeyError:
-                pass
-
-            try:
-                if IND['datastream_index'] > IND['thing_index']:
-                    path[IND['datastream_index'] - 1] = 'Datastreams'
-            except KeyError:
-                pass
-
-            try:
-                if IND['featureofinterest_index'] > IND['observation_index']:
-                    path[IND['featureofinterest_index'] - 1] = 'FeatureOfInterest'
-            except KeyError:
-                pass
-            try:
-                if IND['location_index'] < IND['thing_index'] and IND['location_index'] != 0:
-                    path[IND['location_index'] - 1] = 'Locations'
-                    if IND['thing_index'] > IND['historicallocation_index']:
-                        path[IND['thing_index'] - 1] = 'Things'
-            except KeyError:
-                pass
-
+            path = [MODEL_KEYS[x] if x in MODEL_KEYS else x for x in path]
             field = '__'.join(path)
             d[field] = v
         return d
 
     def list(self, request, version, **kwargs):
-        path = request._request.path
-        path_list = path.split('/')[3:]
-        # print(kwargs)
-        # print(path_list)
-        d = self.queryset_methods(path_list, kwargs)
+
+        d = self.queryset_methods(kwargs)
+
         queryset = self.get_queryset().filter(**d)
+
         queryset = self.filter_queryset(queryset)
+
         page = self.paginate_queryset(queryset)
         single_link = ['Thing', 'Sensor', 'ObservedProperty', 'Datastream',
                        'FeatureOfInterest']
+
+        path_list = list(kwargs.keys())
+        if "pk" in path_list:
+            path_list.remove("pk")
+        if "version" in path_list:
+            path_list.remove("version")
+
         if page is not None:
             if len(path_list) > 1 and path_list[-1] in single_link:
                 id = queryset[0].id
@@ -1062,11 +763,11 @@ class ViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
 
     def retrieve(self, request, version, **kwargs):
-        path = request._request.path
-        path_list = path.split('/')[3:]
-        d = self.queryset_methods(path_list, kwargs)
+        d = self.queryset_methods(kwargs)
         d['pk'] = kwargs['pk']
+
         queryset = self.get_queryset().filter(**d)
+
         queryset = self.filter_queryset(queryset)
         location = get_object_or_404(queryset, pk=d['pk'])
         serializer = self.get_serializer(location)

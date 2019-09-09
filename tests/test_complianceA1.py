@@ -137,9 +137,9 @@ class A_1_2(APITestCase):
         """
         thing = Thing.objects.get(name='Thing 1')
         entities = [
-            'Locations',
-            'HistoricalLocations',
-            'Datastreams'
+            'Location',
+            'HistoricalLocation',
+            'Datastream'
         ]
         for entity in entities:
             self.assertTrue(hasattr(thing, entity))
@@ -181,8 +181,8 @@ class A_1_3(APITestCase):
         """
         location = Location.objects.get(name='Location 1')
         entities = [
-            'Things',
-            'HistoricalLocations'
+            'Thing',
+            'HistoricalLocation'
         ]
         for entity in entities:
             self.assertTrue(hasattr(location, entity))
@@ -212,7 +212,7 @@ class A_1_4(APITestCase):
             time=timezone.now(),
             Thing=thing
         )
-        historicallocation.Locations.add(location)
+        historicallocation.Location.add(location)
 
     def test_historicallocation_properties(self):
         """
@@ -232,7 +232,7 @@ class A_1_4(APITestCase):
         hlocat = HistoricalLocation.objects.get(Thing__name="Thing 1")
         entities = [
             'Thing',
-            'Locations'
+            'Location'
         ]
         for entity in entities:
             self.assertTrue(hasattr(hlocat, entity))
@@ -300,7 +300,7 @@ class A_1_5(APITestCase):
             'Thing',
             'Sensor',
             'ObservedProperty',
-            'Observations'
+            'Observation'
         ]
         for entity in entities:
             self.assertTrue(hasattr(datastream, entity))
@@ -342,7 +342,7 @@ class A_1_6(APITestCase):
         """
         sensor = Sensor.objects.get(name='Temperature Sensor')
         entities = [
-            'Datastreams'
+            'Datastream'
         ]
         for entity in entities:
             self.assertTrue(hasattr(sensor, entity))
@@ -382,7 +382,7 @@ class A_1_7(APITestCase):
         """
         observedproperty = ObservedProperty.objects.get(name='Temperature')
         entities = [
-            'Datastreams'
+            'Datastream'
         ]
         for entity in entities:
             self.assertTrue(hasattr(observedproperty, entity))
@@ -510,7 +510,7 @@ class A_1_9(APITestCase):
         """
         featureofinterest = FeatureOfInterest.objects.get(name='Usidore')
         entities = [
-            'Observations'
+            'Observation'
         ]
         for entity in entities:
             self.assertTrue(hasattr(featureofinterest, entity))
@@ -549,7 +549,7 @@ class A_1_10(APITestCase):
             description='This is a thing',
             properties={}
             )
-        thing.Locations.add(location)
+        thing.Location.add(location)
         FeatureOfInterest.objects.create(
             name='Usidore',
             description='this is a place',
@@ -640,13 +640,13 @@ class A_1_10(APITestCase):
         the appropriate response is returned.
         """
         thing = Thing.objects.get(name='Thing 1')
-        location = thing.Locations.get(name='Location 1')
+        location = thing.Location.get(name='Location 1')
         hlocat = HistoricalLocation.objects.get(Thing__name=thing.name)
         datastream = Datastream.objects.get(Thing__name=thing.name)
-        sensor = Sensor.objects.get(Datastreams__name=datastream.name)
-        oprop = ObservedProperty.objects.get(Datastreams__name=datastream.name)
+        sensor = Sensor.objects.get(Datastream__name=datastream.name)
+        oprop = ObservedProperty.objects.get(Datastream__name=datastream.name)
         obs = Observation.objects.filter(Datastream__name=datastream.name)
-        foi = FeatureOfInterest.objects.get(Observations__id=obs[0].id)
+        foi = FeatureOfInterest.objects.get(Observation__id=obs[0].id)
 
         url = reverse('thing-list', kwargs={'version': 'v1.0'})
         response = self.client.get(url, format='json')
@@ -814,13 +814,13 @@ class A_1_10(APITestCase):
         the appropriate response is returned.
         """
         location = Location.objects.get(name='Location 1')
-        thing = Thing.objects.filter(Locations__name=location.name)
-        hlocat = HistoricalLocation.objects.filter(Locations__name=location.name)
+        thing = Thing.objects.filter(Location__name=location.name)
+        hlocat = HistoricalLocation.objects.filter(Location__name=location.name)
         datastream = Datastream.objects.filter(Thing__name=thing[0].name)
-        sensor = Sensor.objects.filter(Datastreams__name=datastream[0].name)
-        oprop = ObservedProperty.objects.filter(Datastreams__name=datastream[0].name)
+        sensor = Sensor.objects.filter(Datastream__name=datastream[0].name)
+        oprop = ObservedProperty.objects.filter(Datastream__name=datastream[0].name)
         obs = Observation.objects.filter(Datastream__name=datastream[0].name)
-        foi = FeatureOfInterest.objects.get(Observations__id=obs[0].id)
+        foi = FeatureOfInterest.objects.get(Observation__id=obs[0].id)
 
         url = reverse('location-list', kwargs={'version': 'v1.0'})
         response = self.client.get(url, format='json')
@@ -1085,14 +1085,14 @@ class A_1_10(APITestCase):
         Ensure that all nested paths for the Historical Locations entity are
         available and the appropriate response is returned.
         """
-        hlocat = HistoricalLocation.objects.get(Locations__name='Location 1')
-        thing = Thing.objects.get(HistoricalLocations__id=hlocat.id)
-        location = Location.objects.get(HistoricalLocations__id=hlocat.id)
+        hlocat = HistoricalLocation.objects.get(Location__name='Location 1')
+        thing = Thing.objects.get(HistoricalLocation__id=hlocat.id)
+        location = Location.objects.get(HistoricalLocation__id=hlocat.id)
         datastream = Datastream.objects.filter(Thing__name=thing.name)
-        sensor = Sensor.objects.filter(Datastreams__name=datastream[0].name)
-        oprop = ObservedProperty.objects.filter(Datastreams__name=datastream[0].name)
+        sensor = Sensor.objects.filter(Datastream__name=datastream[0].name)
+        oprop = ObservedProperty.objects.filter(Datastream__name=datastream[0].name)
         obs = Observation.objects.filter(Datastream__name=datastream[0].name)
-        foi = FeatureOfInterest.objects.get(Observations__id=obs[0].id)
+        foi = FeatureOfInterest.objects.get(Observation__id=obs[0].id)
 
         url = reverse('historicallocation-list', kwargs={'version': 'v1.0'})
         response = self.client.get(url, format='json')
@@ -1359,12 +1359,12 @@ class A_1_10(APITestCase):
         """
         datastream = Datastream.objects.get(name='Chunt')
         thing = datastream.Thing
-        location = datastream.Thing.Locations.get(name='Location 1')
+        location = datastream.Thing.Location.get(name='Location 1')
         hlocat = HistoricalLocation.objects.get(Thing__name=thing.name)
-        sensor = Sensor.objects.get(Datastreams__name=datastream.name)
-        oprop = ObservedProperty.objects.get(Datastreams__name=datastream.name)
+        sensor = Sensor.objects.get(Datastream__name=datastream.name)
+        oprop = ObservedProperty.objects.get(Datastream__name=datastream.name)
         obs = Observation.objects.filter(Datastream__name=datastream.name)
-        foi = FeatureOfInterest.objects.get(Observations__id=obs[0].id)
+        foi = FeatureOfInterest.objects.get(Observation__id=obs[0].id)
 
         url = reverse('datastream-list', kwargs={'version': 'v1.0'})
         response = self.client.get(url, format='json')
@@ -1534,11 +1534,11 @@ class A_1_10(APITestCase):
         sensor = Sensor.objects.get(name='Temperature Sensor')
         datastream = Datastream.objects.get(Sensor__name=sensor.name)
         thing = datastream.Thing
-        location = thing.Locations.get(name='Location 1')
+        location = thing.Location.get(name='Location 1')
         hlocat = HistoricalLocation.objects.get(Thing__name=thing.name)
-        oprop = ObservedProperty.objects.get(Datastreams__name=datastream.name)
+        oprop = ObservedProperty.objects.get(Datastream__name=datastream.name)
         obs = Observation.objects.filter(Datastream__name=datastream.name)
-        foi = FeatureOfInterest.objects.get(Observations__id=obs[0].id)
+        foi = FeatureOfInterest.objects.get(Observation__id=obs[0].id)
 
         url = reverse('sensor-list', kwargs={'version': 'v1.0'})
         response = self.client.get(url, format='json')
@@ -1724,11 +1724,11 @@ class A_1_10(APITestCase):
         oprop = ObservedProperty.objects.get(name='Temperature')
         datastream = Datastream.objects.get(ObservedProperty__name=oprop.name)
         thing = datastream.Thing
-        location = thing.Locations.get(name='Location 1')
+        location = thing.Location.get(name='Location 1')
         hlocat = HistoricalLocation.objects.get(Thing__name=thing.name)
-        sensor = Sensor.objects.get(Datastreams__name=datastream.name)
+        sensor = Sensor.objects.get(Datastream__name=datastream.name)
         obs = Observation.objects.filter(Datastream__name=datastream.name)
-        foi = FeatureOfInterest.objects.get(Observations__id=obs[0].id)
+        foi = FeatureOfInterest.objects.get(Observation__id=obs[0].id)
 
         url = reverse('observedproperty-list', kwargs={'version': 'v1.0'})
         response = self.client.get(url, format='json')
@@ -1912,13 +1912,13 @@ class A_1_10(APITestCase):
         available and the appropriate response is returned.
         """
         obs = Observation.objects.last()
-        datastream = Datastream.objects.get(Observations__id=obs.id)
+        datastream = Datastream.objects.get(Observation__id=obs.id)
         thing = datastream.Thing
-        location = thing.Locations.get(name='Location 1')
+        location = thing.Location.get(name='Location 1')
         hlocat = HistoricalLocation.objects.get(Thing__name=thing.name)
-        sensor = Sensor.objects.get(Datastreams__name=datastream.name)
-        oprop = ObservedProperty.objects.get(Datastreams__name=datastream.name)
-        foi = FeatureOfInterest.objects.get(Observations__id=obs.id)
+        sensor = Sensor.objects.get(Datastream__name=datastream.name)
+        oprop = ObservedProperty.objects.get(Datastream__name=datastream.name)
+        foi = FeatureOfInterest.objects.get(Observation__id=obs.id)
 
         url = reverse('observation-list', kwargs={'version': 'v1.0'})
         response = self.client.get(url, format='json')
@@ -2099,12 +2099,12 @@ class A_1_10(APITestCase):
         """
         foi = FeatureOfInterest.objects.get(name="Usidore")
         obs = Observation.objects.filter(FeatureOfInterest__name=foi.name)
-        datastream = Datastream.objects.filter(Observations__id=obs[0].id)
-        sensor = Sensor.objects.filter(Datastreams__name=datastream[0].name)
-        oprop = ObservedProperty.objects.filter(Datastreams__name=datastream[0].name)
-        thing = Thing.objects.filter(Datastreams__name=datastream[0].name)
-        location = Location.objects.filter(Things__name=thing[0].name)
-        hlocat = HistoricalLocation.objects.filter(Locations__name=location[0].name)
+        datastream = Datastream.objects.filter(Observation__id=obs[0].id)
+        sensor = Sensor.objects.filter(Datastream__name=datastream[0].name)
+        oprop = ObservedProperty.objects.filter(Datastream__name=datastream[0].name)
+        thing = Thing.objects.filter(Datastream__name=datastream[0].name)
+        location = Location.objects.filter(Thing__name=thing[0].name)
+        hlocat = HistoricalLocation.objects.filter(Location__name=location[0].name)
 
         url = reverse('featureofinterest-list', kwargs={'version': 'v1.0'})
         response = self.client.get(url, format='json')
@@ -2352,7 +2352,7 @@ class A_1_10(APITestCase):
         Ensure that all nested paths for the things entity are available and
         the appropriate response is returned.
         """
-        hlocat = HistoricalLocation.objects.get(Locations__name='Location 1')
+        hlocat = HistoricalLocation.objects.get(Location__name='Location 1')
         properties = [
             'time'
         ]

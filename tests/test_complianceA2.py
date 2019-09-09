@@ -331,7 +331,7 @@ class A_2_1_2(APITestCase):
             description='This is a thing',
             properties={}
             )
-        thing.Locations.add(location)
+        thing.Location.add(location)
         FeatureOfInterest.objects.create(
             name='Usidore',
             description='this is a place',
@@ -1231,7 +1231,7 @@ class A_2_1_6(APITestCase):
             properties={}
             )
         location = Location.objects.filter(name='Location 1')
-        targ.Locations.set(location)
+        targ.Location.set(location)
         FeatureOfInterest.objects.create(
             name='Usidore',
             description='this is a place',

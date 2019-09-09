@@ -27,13 +27,13 @@ class FeatureOfInterestSerializer(ControlInformation, Select, Expand, ResultForm
 
         def get_expandable_fields(*args):
             expandable_fields = {
-                'Observations': (
+                'Observation': (
                     ObservationSerializer,
                     (),
                     {'many': True}
                 ),
             }
-            Conflicts.conflicts.append('FeaturesOfInterest')
+            Conflicts.conflicts.append('FeatureOfInterest')
             for a in args:
                 if a in Conflicts.conflicts:
                     expandable_fields.pop(a, expandable_fields)
@@ -61,14 +61,14 @@ class HistoricalLocationSerializer(ControlInformation, Select, Expand, ResultFor
 
         def get_expandable_fields(*args):
             expandable_fields = {
-                'Thing': (ThingSerializer),
-                'Locations': (
+                'Thing': ThingSerializer,
+                'Location': (
                     LocationSerializer,
                     (),
                     {'many': True}
                 )
             }
-            Conflicts.conflicts.append('HistoricalLocations')
+            Conflicts.conflicts.append('HistoricalLocation')
             for a in args:
                 if a in Conflicts.conflicts:
                     expandable_fields.pop(a, expandable_fields)
@@ -98,18 +98,18 @@ class LocationSerializer(ControlInformation, Select, Expand, ResultFormat, seria
 
         def get_expandable_fields(*args):
             expandable_fields = {
-                'Things': (
+                'Thing': (
                     ThingSerializer,
                     (),
                     {'many': True}
                     ),
-                'HistoricalLocations': (
+                'HistoricalLocation': (
                     HistoricalLocationSerializer,
                     (),
                     {'many': True}
                     )
             }
-            Conflicts.conflicts.append('Locations')
+            Conflicts.conflicts.append('Location')
             for a in args:
                 if a in Conflicts.conflicts:
                     expandable_fields.pop(a, expandable_fields)
@@ -138,23 +138,23 @@ class ThingSerializer(ControlInformation, Select, Expand, ResultFormat, serializ
 
         def get_expandable_fields(*args):
             expandable_fields = {
-                'Datastreams': (
+                'Datastream': (
                     DatastreamSerializer,
                     (),
                     {'many': True}
                 ),
-                'Locations': (
+                'Location': (
                     LocationSerializer,
                     (),
                     {'many': True}
                 ),
-                'HistoricalLocations': (
+                'HistoricalLocation': (
                     HistoricalLocationSerializer,
                     (),
                     {'many': True}
                 )
             }
-            Conflicts.conflicts.append('Things')
+            Conflicts.conflicts.append('Thing')
             for a in args:
                 if a in Conflicts.conflicts:
                     expandable_fields.pop(a, expandable_fields)
@@ -190,7 +190,7 @@ class SensorSerializer(ControlInformation, Select, Expand, ResultFormat, seriali
                     {'many': True}
                 )
             }
-            Conflicts.conflicts.append('Sensors')
+            Conflicts.conflicts.append('Sensor')
             for a in args:
                 if a in Conflicts.conflicts:
                     expandable_fields.pop(a, expandable_fields)
@@ -226,7 +226,7 @@ class ObservedPropertySerializer(ControlInformation, Select, Expand, ResultForma
                     {'many': True}
                 )
             }
-            Conflicts.conflicts.append('ObservedProperties')
+            Conflicts.conflicts.append('ObservedProperty')
             for a in args:
                 if a in Conflicts.conflicts:
                     expandable_fields.pop(a, expandable_fields)
@@ -255,10 +255,10 @@ class ObservationSerializer(ControlInformation, Select, Expand, ResultFormat, se
 
         def get_expandable_fields(*args):
             expandable_fields = {
-                'Datastream': (DatastreamSerializer),
-                'FeatureOfInterest': (FeatureOfInterestSerializer),
+                'Datastream': DatastreamSerializer,
+                'FeatureOfInterest': FeatureOfInterestSerializer,
             }
-            Conflicts.conflicts.append('Observations')
+            Conflicts.conflicts.append('Observation')
             for a in args:
                 if a in Conflicts.conflicts:
                     expandable_fields.pop(a, expandable_fields)
@@ -291,16 +291,16 @@ class DatastreamSerializer(ControlInformation, Select, Expand, ResultFormat, ser
 
         def get_expandable_fields(*args):
             expandable_fields = {
-                'Thing': (ThingSerializer),
-                'Sensor': (SensorSerializer),
-                'ObservedProperty': (ObservedPropertySerializer),
-                'Observations': (
+                'Thing': ThingSerializer,
+                'Sensor': SensorSerializer,
+                'ObservedProperty': ObservedPropertySerializer,
+                'Observation': (
                     ObservationSerializer,
                     (),
                     {'many': True}
                 )
             }
-            Conflicts.conflicts.append('Datastreams')
+            Conflicts.conflicts.append('Datastream')
             for a in args:
                 if a in Conflicts.conflicts:
                     expandable_fields.pop(a, expandable_fields)

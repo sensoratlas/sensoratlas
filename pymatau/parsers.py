@@ -349,10 +349,12 @@ class Filter(object):
                 raise Unprocessable()
             except Exception as e:
                 raise BadRequest("Malformed request: " + str(e))
+
         elif queryexpand:
             expanded_list = re.split(r',\s*(?![^()]*\))', queryexpand)
             queried_fields = {}
             expanded_fields = []
+
             for field in expanded_list:
                 children = field.split('/')
                 fields_only = ''
@@ -373,7 +375,9 @@ class Filter(object):
                             fields_only += child
                         else:
                             fields_only += child + '/'
+
                 expanded_fields.append(fields_only)
+
             expanded_fields = ','.join(expanded_fields)
 
             for key, value in queried_fields.items():

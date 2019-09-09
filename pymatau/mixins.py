@@ -6,7 +6,7 @@ from .errors import Conflicts, NotImplemented501
 from .parsers import CustomParser
 from rest_framework.reverse import reverse
 import json
-
+from .viewsets import MODEL_KEYS
 
 class ControlInformation:
     keys = {
@@ -109,6 +109,64 @@ class ControlInformation:
         :return:
         """
         data = super(ControlInformation, self).to_representation(obj)
+        # have to rename plural fields ...
+
+        model = self.Meta.model.__name__
+        if model == "Thing":
+            try:
+                data['Datastreams'] = data["Datastream"]
+                data.pop('Datastream')
+            except KeyError:
+                pass
+            try:
+                data['Locations'] = data["Location"]
+                data.pop("Location")
+            except KeyError:
+                pass
+            try:
+                data['HistoricalLocations'] = data["HistoricalLocation"]
+                data.pop('HistoricalLocation')
+            except KeyError:
+                pass
+
+        if model == "Datastream":
+            try:
+                data['Observations'] = data["Observation"]
+                data.pop('Observation')
+            except KeyError:
+                pass
+
+        if model == "FeatureOfInterest":
+            try:
+                data['Observations'] = data["Observation"]
+                data.pop('Observation')
+            except KeyError:
+                pass
+
+        if model == "Location":
+            try:
+                data['Things'] = data["Thing"]
+                data.pop('Thing')
+            except KeyError:
+                pass
+            try:
+                data['HistoricalLocations'] = data["HistoricalLocation"]
+                data.pop('HistoricalLocation')
+            except KeyError:
+                pass
+
+        if model == "HistoricalLocation":
+            try:
+                data['Things'] = data["Thing"]
+                data.pop('Thing')
+            except KeyError:
+                pass
+            try:
+                data['Locations'] = data["Location"]
+                data.pop('Location')
+            except KeyError:
+                pass
+
         try:
             data['@iot.selfLink'] = data['selfLink']
             data.pop('selfLink')
@@ -151,10 +209,8 @@ class Expand(ExpanderSerializerMixin):
     """
     def __init__(self, *args, **kwargs):
         expanded_fields = kwargs.pop('expanded_fields', None)
-        get_expandable_fields = getattr(self.Meta,
-                                        'get_expandable_fields',
-                                        None
-                                        )
+        get_expandable_fields = getattr(self.Meta, 'get_expandable_fields', None)
+
         expand_arg = '$expand'
         super(Expand, self).__init__(*args, **kwargs)
         if not get_expandable_fields:
@@ -166,6 +222,7 @@ class Expand(ExpanderSerializerMixin):
             request = context.get('request', None)
             if not request:
                 return
+            # todo: dont rely on 'PATH_INFO'
             entity = request.META['PATH_INFO'].split('/')[-1]
             entity = entity.split('(')[0]
             querystring = request.META['QUERY_STRING']
@@ -176,21 +233,28 @@ class Expand(ExpanderSerializerMixin):
                 pass
             if not expanded_fields:
                 return
+
         expanded_list = re.split(r',\s*(?![^()]*\))', expanded_fields)
+
         new_list = []
+
         for exp in expanded_list:
             test = exp.split('/')[0]
             if test in [x.split('/')[0] for x in new_list]:
                 continue
             else:
                 new_list.append(exp)
+
         expanded_list = new_list
         queried_fields = {}
         expanded_fields = []
+
         for field in expanded_list:
             children = field.split('/')
             fields_only = ''
             for i, child in enumerate(children, 1):
+                if child in MODEL_KEYS:
+                    child = MODEL_KEYS[child]
                 if child[-1] == ')':
                     d = "("
                     split_fields = [e+d for e in child.split(d) if e]
@@ -207,8 +271,13 @@ class Expand(ExpanderSerializerMixin):
                         fields_only += child
                     else:
                         fields_only += child + '/'
+
             expanded_fields.append(fields_only)
+
+        expanded_fields = [MODEL_KEYS[x] if x in MODEL_KEYS else x for x in expanded_fields]
+
         expanded_fields = ','.join(expanded_fields)
+
         expansions = dict_from_qs(expanded_fields)
         base_field = set()
         for expanded_field, nested_expand in expansions.items():

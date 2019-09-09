@@ -45,10 +45,10 @@ class Thing(models.Model):
         blank=True,
         null=True
     )
-    Locations = models.ManyToManyField(
+    Location = models.ManyToManyField(
         "Location",
         blank=True,
-        related_name="Things",
+        related_name="Thing",
         verbose_name="location"
     )
 
@@ -91,17 +91,17 @@ class HistoricalLocation(models.Model):
     time = models.DateTimeField(
         "Time"
     )
-    Locations = models.ManyToManyField(
+    Location = models.ManyToManyField(
         Location,
         verbose_name='Locations',
-        related_name='HistoricalLocations'
+        related_name='HistoricalLocation'
     )
     Thing = models.ForeignKey(
         Thing,
         on_delete=models.CASCADE,
         null=True,  # TODO: null needs to be True for some nested related field creations, but HistoricalLocation objects with no related Thing must not exist.
         verbose_name='Thing',
-        related_name='HistoricalLocations'
+        related_name='HistoricalLocation'
     )
 
 
@@ -143,19 +143,19 @@ class Datastream(models.Model):
     Thing = models.ForeignKey(
         Thing,
         on_delete=models.CASCADE,
-        related_name="Datastreams",
+        related_name="Datastream",
         verbose_name='Thing'
         )
     Sensor = models.ForeignKey(
         "Sensor",
         on_delete=models.CASCADE,
-        related_name="Datastreams",
+        related_name="Datastream",
         verbose_name="Sensor"
     )
     ObservedProperty = models.ForeignKey(
         "ObservedProperty",
         on_delete=models.CASCADE,
-        related_name="Datastreams",
+        related_name="Datastream",
         verbose_name="Observed Property"
     )
 
@@ -244,13 +244,13 @@ class Observation(models.Model):
         'Datastream',
         on_delete=models.CASCADE,
         verbose_name='Datastream',
-        related_name='Observations'
+        related_name='Observation'
     )
     FeatureOfInterest = models.ForeignKey(
         'FeatureOfInterest',
         on_delete=models.CASCADE,
         verbose_name="Feature of Interest",
-        related_name='Observations'
+        related_name='Observation'
     )
 
     class Meta:
@@ -290,12 +290,12 @@ class FeatureOfInterest(models.Model):
         return self.name
 
 
-@receiver(m2m_changed, sender=Thing.Locations.through)
+@receiver(m2m_changed, sender=Thing.Location.through)
 def prevent_duplicate_active_user(sender, instance, **kwargs):
     # this will need to change when more encoding types are added
     encd = 'application/vnd.geo+json'
     try:
-        if instance.Locations.filter(encodingType=encd).count() > 1:
+        if instance.Location.filter(encodingType=encd).count() > 1:
             raise ValidationError(
                 """
                 Encoding types for each related location must be unique.
@@ -311,23 +311,23 @@ def historicallocation_autocreate(sender, **kwargs):
     created = bool(instance.id)
 
     if created and instance._meta.model_name == 'location':
-        things = Thing.objects.filter(Locations__id=instance.id)
+        things = Thing.objects.filter(Location__id=instance.id)
         if things:
             for thing in things:
                 historicallocation = HistoricalLocation.objects.create(
                     time=timezone.now(),
                     Thing=thing
                     )
-                historicallocation.Locations.add(instance)
+                historicallocation.Location.add(instance)
 
     if created and instance._meta.model_name == 'thing':
-        location = Location.objects.filter(Things__id=instance.id)
+        location = Location.objects.filter(Thing__id=instance.id)
         if location:
             historicallocation = HistoricalLocation.objects.create(
                 time=timezone.now(),
                 Thing=instance
                 )
-            historicallocation.Locations.set(location)
+            historicallocation.Location.set(location)
 
 
-m2m_changed.connect(historicallocation_autocreate, sender=Thing.Locations.through)
+m2m_changed.connect(historicallocation_autocreate, sender=Thing.Location.through)
