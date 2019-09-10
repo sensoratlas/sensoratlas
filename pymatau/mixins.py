@@ -109,6 +109,63 @@ class ControlInformation:
         :return:
         """
         data = super(ControlInformation, self).to_representation(obj)
+        # have to rename plural fields ...
+
+        model = self.Meta.model.__name__
+        if model == "Thing":
+            try:
+                data['Datastreams'] = data["Datastream"]
+                data.pop('Datastream')
+            except KeyError:
+                pass
+            try:
+                data['Locations'] = data["Location"]
+                data.pop("Location")
+            except KeyError:
+                pass
+            try:
+                data['HistoricalLocations'] = data["HistoricalLocation"]
+                data.pop('HistoricalLocation')
+            except KeyError:
+                pass
+
+        if model == "Datastream":
+            try:
+                data['Observations'] = data["Observation"]
+                data.pop('Observation')
+            except KeyError:
+                pass
+
+        if model == "FeatureOfInterest":
+            try:
+                data['Observations'] = data["Observation"]
+                data.pop('Observation')
+            except KeyError:
+                pass
+
+        if model == "Location":
+            try:
+                data['Things'] = data["Thing"]
+                data.pop('Thing')
+            except KeyError:
+                pass
+            try:
+                data['HistoricalLocations'] = data["HistoricalLocation"]
+                data.pop('HistoricalLocation')
+            except KeyError:
+                pass
+
+        if model == "HistoricalLocation":
+            try:
+                data['Things'] = data["Thing"]
+                data.pop('Thing')
+            except KeyError:
+                pass
+            try:
+                data['Locations'] = data["Location"]
+                data.pop('Location')
+            except KeyError:
+                pass
 
         try:
             data['@iot.selfLink'] = data['selfLink']
