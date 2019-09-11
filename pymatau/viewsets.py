@@ -826,6 +826,13 @@ class ViewSet(viewsets.ModelViewSet):
         """
         if list(kwargs.keys())[-1] != "version":
             parent = list(kwargs.keys())[-1]
+            pk_regex = "_pk"
+            parent = re.sub(pk_regex, "", parent)
+            if parent in INDICES:
+                if basename == "location":
+
+                data[parent] = [{"@iot.id": kwargs[parent]}]
+
             if parent == "Locations_pk":
                 data['Locations'] = [{"@iot.id": kwargs[parent]}]
             if parent == "Sensors_pk":
