@@ -33,12 +33,12 @@ REST_FRAMEWORK = {
 4. Include the pyMatau URLconf in your project urls.py like this::
 
 ```buildoutcfg
-path('api/', include('pymatau.urls')),
+path('', include('pymatau.urls')),
 ```
 
 5. Run `python manage.py migrate` to create the pyMatau (SensorThings) models.
 
-6. Start the development server and visit http://127.0.0.1:8000/api/v1.0/
+6. Start the development server and visit http://127.0.0.1:8000/v1.0/
 
 
 ## tests

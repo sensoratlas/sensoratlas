@@ -1,4 +1,3 @@
-import re
 from expander import ExpanderSerializerMixin
 from rest_framework import serializers
 from .utils import dict_from_qs, qs_from_dict
@@ -6,7 +5,8 @@ from .errors import Conflicts, NotImplemented501
 from .parsers import CustomParser
 from rest_framework.reverse import reverse
 import json
-from .viewsets import MODEL_KEYS
+from .models import Datastream
+
 
 class ControlInformation:
     keys = {
@@ -211,74 +211,30 @@ class Expand(ExpanderSerializerMixin):
         expanded_fields = kwargs.pop('expanded_fields', None)
         get_expandable_fields = getattr(self.Meta, 'get_expandable_fields', None)
 
-        expand_arg = '$expand'
-        super(Expand, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
+
         if not get_expandable_fields:
             return
+
         if not expanded_fields:
             context = self.context
             if not context:
                 return
+
             request = context.get('request', None)
             if not request:
                 return
-            # todo: dont rely on 'PATH_INFO'
-            entity = request.META['PATH_INFO'].split('/')[-1]
-            entity = entity.split('(')[0]
-            querystring = request.META['QUERY_STRING']
-            querydict = CustomParser.limited_parse_qsl(querystring)
-            try:
-                expanded_fields = querydict[expand_arg]
-            except KeyError:
-                pass
+
+            raw_querystring = request.META['QUERY_STRING']
+
+            querydict = CustomParser.limited_parse_qsl(raw_querystring)
+            expanded_fields = querydict.get('$expand', None)
+
             if not expanded_fields:
                 return
 
-        expanded_list = re.split(r',\s*(?![^()]*\))', expanded_fields)
-
-        new_list = []
-
-        for exp in expanded_list:
-            test = exp.split('/')[0]
-            if test in [x.split('/')[0] for x in new_list]:
-                continue
-            else:
-                new_list.append(exp)
-
-        expanded_list = new_list
-        queried_fields = {}
-        expanded_fields = []
-
-        for field in expanded_list:
-            children = field.split('/')
-            fields_only = ''
-            for i, child in enumerate(children, 1):
-                if child in MODEL_KEYS:
-                    child = MODEL_KEYS[child]
-                if child[-1] == ')':
-                    d = "("
-                    split_fields = [e+d for e in child.split(d) if e]
-                    f = split_fields[0][:-1]
-                    q = ''.join(split_fields[1:])[:-1]
-                    queried_fields[f] = q[:-1]
-                    if i == len(children):
-                        fields_only += f
-                    else:
-                        fields_only += f + '/'
-                else:
-                    queried_fields[child] = None
-                    if i == len(children):
-                        fields_only += child
-                    else:
-                        fields_only += child + '/'
-
-            expanded_fields.append(fields_only)
-
-        expanded_fields = [MODEL_KEYS[x] if x in MODEL_KEYS else x for x in expanded_fields]
-
-        expanded_fields = ','.join(expanded_fields)
-
         expansions = dict_from_qs(expanded_fields)
+
         base_field = set()
         for expanded_field, nested_expand in expansions.items():
             base_field.add(expanded_field)
@@ -296,13 +252,22 @@ class Expand(ExpanderSerializerMixin):
                 kwargs = kwargs.copy()
                 kwargs.setdefault('context', self.context)
 
+                print("context", context)
+
                 if issubclass(serializer_class, Expand):
                     serializer = serializer_class(
-                                   expanded_fields=qs_from_dict(nested_expand),
-                                   *args,
-                                   **kwargs)
+                        expanded_fields=qs_from_dict(nested_expand),
+                        *args,
+                        **kwargs
+                    )
                 else:
-                    serializer = serializer_class(*args, **kwargs)
+                    serializer = serializer_class(
+                        *args,
+                        **kwargs
+                    )
+
+                print(serializer)
+                print(serializer.__dict__)
 
                 self.fields[expanded_field] = serializer
                 Conflicts.conflicts = []
@@ -316,11 +281,14 @@ class Select(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super(Select, self).__init__(*args, **kwargs)
         select = self.context['request'].query_params.get('$select')
+
         if select:
             select = select.split(',')
             allowed = set(select)
             existing = set(self.fields.keys())
+            print("existing", existing)
             for selected in existing - allowed:
+                # not self.fields --> this does all fields. It shuold be the fields in the unnested serializer
                 self.fields.pop(selected)
 
 

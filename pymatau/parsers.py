@@ -12,6 +12,8 @@ from django.utils import timezone
 from datetime import datetime
 from .functions import QueryFunctions, QueryOperations
 from .viewsets import MODEL_KEYS
+from .models import Datastream
+
 
 def lexer(string):  # TODO: refactor
     """
@@ -275,7 +277,7 @@ def parser(string, queryset):
     return queryset
 
 
-class QueryObjects(object):
+class QueryObjects:
     D = {}
     B = []
     IND = 0
@@ -330,7 +332,7 @@ class Orderby(filters.OrderingFilter):
         return queryset
 
 
-class Filter(object):
+class Filter:
     """$filter
     Use $filter query option to perform conditional operations on the
     property values and filter request result.
@@ -339,9 +341,12 @@ class Filter(object):
     def get_queryset(self):
         qs = super(Filter, self).get_queryset()
         raw_querystring = self.request.META['QUERY_STRING']
+
         querydict = CustomParser.limited_parse_qsl(raw_querystring)
+
         queryfilter = querydict.get('$filter', None)
         queryexpand = querydict.get('$expand', None)
+
         if queryfilter:
             try:
                 qs = parser(queryfilter, qs)
@@ -353,38 +358,8 @@ class Filter(object):
                 raise BadRequest("Malformed request: " + str(e))
 
         elif queryexpand:
-            expanded_list = re.split(r',\s*(?![^()]*\))', queryexpand)
-            queried_fields = {}
-            expanded_fields = []
-
-            for field in expanded_list:
-                children = field.split('/')
-                fields_only = ''
-                for i, child in enumerate(children, 1):
-                    if child[-1] == ')':
-                        d = "("
-                        split_fields = [e+d for e in child.split(d) if e]
-                        f = split_fields[0][:-1]
-                        q = ''.join(split_fields[1:])[:-1]
-                        queried_fields[f] = q[:-1]
-                        if i == len(children):
-                            fields_only += f
-                        else:
-                            fields_only += f + '/'
-                    else:
-                        queried_fields[child] = None
-                        if i == len(children):
-                            fields_only += child
-                        else:
-                            fields_only += child + '/'
-
-                expanded_fields.append(fields_only)
-
-            expanded_fields = ','.join(expanded_fields)
-
-            for key, value in queried_fields.items():
-                if value:
-                    raise NotImplemented501()
+            # Datastream.objects.filter(id=1)
+            print(qs)
         return qs
 
 
