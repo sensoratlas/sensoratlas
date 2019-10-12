@@ -1,5 +1,5 @@
 from .router import Router, NestedSimpleRouter
-import pymatau.views as datastream
+import sensorAtlas.views as datastream
 
 
 class DatastreamRouter:
