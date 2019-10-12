@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
-from pymatau.models import Thing, Location, DataStream, Sensor, \
+from sensorAtlas.models import Thing, Location, DataStream, Sensor, \
     ObservedProperty, Observation, FeatureOfInterest, HistoricalLocation
 from django.contrib.gis.geos import Point, Polygon
 from django.urls import reverse

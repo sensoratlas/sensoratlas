@@ -1,5 +1,5 @@
 from .router import Router, NestedSimpleRouter
-import pymatau.views as location
+import sensorAtlas.views as location
 
 
 class LocationRouter:
