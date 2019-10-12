@@ -8,7 +8,7 @@ Detailed documentation is in the "docs" directory.
 
 
 
-1. Install `sensorAtlas` (e.g. `pip install sensorAtlas`)
+1. Install `sensorAtlas` (e.g. `pip install <path-to-file>/sensorAtlas-0.1.tar.gz`)
 
 2. Add "sensoratlas" to your INSTALLED_APPS setting like this::
 
