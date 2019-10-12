@@ -1,19 +1,21 @@
-# pyMatau
+# sensoraAtlas
 
-pyMatau is an OGC SensorThings API implementation in Python.
+sensorAtlas is an OGC SensorThings API implementation in Python.
 
 Detailed documentation is in the "docs" directory.
 
 ## Quick start
 
-1. Install `pymatau` (e.g. `pip install pymatau/dist/pymatau-0.1.tar.gz`)
 
-2. Add "pymatau" to your INSTALLED_APPS setting like this::
+
+1. Install `sensorAtlas` (e.g. `pip install sensorAtlas`)
+
+2. Add "sensoratlas" to your INSTALLED_APPS setting like this::
 
 ```buildoutcfg
 INSTALLED_APPS = [
     ...
-    'pymatau',
+    'sensoratlas',
 ]
 ```
 
@@ -24,19 +26,19 @@ REST_FRAMEWORK = {
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
     'URL_FIELD_NAME': 'selfLink',
     'ORDERING_PARAM': '$orderby',
-    'DEFAULT_PAGINATION_CLASS': 'pymatau.query_options.SensorThingsPagination',
+    'DEFAULT_PAGINATION_CLASS': 'sensoratlas.query_options.SensorThingsPagination',
     'PAGE_SIZE': 100,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json'
 }
 ```
 
-4. Include the pyMatau URLconf in your project urls.py like this::
+4. Include the sensoratlas URLconf in your project urls.py like this::
 
 ```buildoutcfg
-path('api/', include('pymatau.urls')),
+path('api/', include('sensoratlas.urls')),
 ```
 
-5. Run `python manage.py migrate` to create the pyMatau (SensorThings) models.
+5. Run `python manage.py migrate` to create the sensorAtlas models.
 
 6. Start the development server and visit http://127.0.0.1:8000/api/v1.0/
 
