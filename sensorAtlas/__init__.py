@@ -1,2 +1,2 @@
 # app config
-default_app_config = 'sensorAtlas.apps.SensorAppConfig'
+default_app_config = 'sensorAtlas.apps.sensorAtlasConfig'

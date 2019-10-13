@@ -1,6 +1,6 @@
 # from rest_framework import status
 # from rest_framework.test import APITestCase
-# from sensorthings.models import Thing, Location, DataStream, Sensor, \
+# from sensorthings.models import Thing, Location, Datastream, Sensor, \
 #     ObservedProperty, Observation, FeatureOfInterest
 # from django.contrib.gis.geos import Point, Polygon
 # from django.utils import timezone

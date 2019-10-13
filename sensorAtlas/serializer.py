@@ -1,28 +1,24 @@
-from .models import DataStream, Thing, Sensor, Location, \
+from .models import Datastream, Thing, Sensor, Location, \
     ObservedProperty, Observation, HistoricalLocation, FeatureOfInterest
 from rest_framework import serializers
-from .query_options import Expand, Select, DataArray
-from .viewsets import NavigationLinks
-from .representation import Representation
+from .mixins import Expand, Select, ResultFormat, ControlInformation
 from .errors import Conflicts
 
 
-class FeatureOfInterestSerializer(
-        Select, Expand, DataArray, Representation,
-        NavigationLinks, serializers.ModelSerializer
-        ):
+class FeatureOfInterestSerializer(ControlInformation, Select, Expand, ResultFormat, serializers.ModelSerializer):
     """
     Serializer for the nested Features of Interest
     of the Datastreams entity.
     """
-    observationsLink = serializers.SerializerMethodField()
+    selfLink = serializers.SerializerMethodField()
+    navigationLinks = serializers.SerializerMethodField()
 
     class Meta:
         model = FeatureOfInterest
         fields = (
             'id',
             'selfLink',
-            'observationsLink',
+            'navigationLinks',
             'name',
             'description',
             'encodingType',
@@ -31,13 +27,13 @@ class FeatureOfInterestSerializer(
 
         def get_expandable_fields(*args):
             expandable_fields = {
-                'Observations': (
+                'Observation': (
                     ObservationSerializer,
                     (),
                     {'many': True}
                 ),
             }
-            Conflicts.conflicts.append('FeaturesOfInterest')
+            Conflicts.conflicts.append('FeatureOfInterest')
             for a in args:
                 if a in Conflicts.conflicts:
                     expandable_fields.pop(a, expandable_fields)
@@ -46,37 +42,33 @@ class FeatureOfInterestSerializer(
             return expandable_fields
 
 
-class HistoricalLocationSerializer(
-        Select, Expand, DataArray, Representation,
-        NavigationLinks, serializers.ModelSerializer
-        ):
+class HistoricalLocationSerializer(ControlInformation, Select, Expand, ResultFormat, serializers.ModelSerializer):
     """
     Serializer for the nested Historical Locations of the
     Datastreams entity.
     """
-    thingsLink = serializers.SerializerMethodField()
-    locationsLink = serializers.SerializerMethodField()
+    selfLink = serializers.SerializerMethodField()
+    navigationLinks = serializers.SerializerMethodField()
 
     class Meta:
         model = HistoricalLocation
         fields = (
             'id',
             'selfLink',
-            'thingsLink',
-            'locationsLink',
+            'navigationLinks',
             'time'
         )
 
         def get_expandable_fields(*args):
             expandable_fields = {
-                'Thing': (ThingSerializer),
-                'Locations': (
+                'Thing': ThingSerializer,
+                'Location': (
                     LocationSerializer,
                     (),
                     {'many': True}
                 )
             }
-            Conflicts.conflicts.append('HistoricalLocations')
+            Conflicts.conflicts.append('HistoricalLocation')
             for a in args:
                 if a in Conflicts.conflicts:
                     expandable_fields.pop(a, expandable_fields)
@@ -85,22 +77,19 @@ class HistoricalLocationSerializer(
             return expandable_fields
 
 
-class LocationSerializer(
-        Select,  Expand, DataArray, Representation,
-        NavigationLinks, serializers.ModelSerializer):
+class LocationSerializer(ControlInformation, Select, Expand, ResultFormat, serializers.ModelSerializer):
     """
     Serializer for the nested Locations of the Datastreams entity.
     """
-    thingsLink = serializers.SerializerMethodField()
-    historicallocationsLink = serializers.SerializerMethodField()
+    selfLink = serializers.SerializerMethodField()
+    navigationLinks = serializers.SerializerMethodField()
 
     class Meta:
         model = Location
         fields = (
             'id',
             'selfLink',
-            'thingsLink',
-            'historicallocationsLink',
+            'navigationLinks',
             'name',
             'description',
             'encodingType',
@@ -109,18 +98,18 @@ class LocationSerializer(
 
         def get_expandable_fields(*args):
             expandable_fields = {
-                'Things': (
+                'Thing': (
                     ThingSerializer,
                     (),
                     {'many': True}
                     ),
-                'HistoricalLocations': (
+                'HistoricalLocation': (
                     HistoricalLocationSerializer,
                     (),
                     {'many': True}
                     )
             }
-            Conflicts.conflicts.append('Locations')
+            Conflicts.conflicts.append('Location')
             for a in args:
                 if a in Conflicts.conflicts:
                     expandable_fields.pop(a, expandable_fields)
@@ -129,24 +118,19 @@ class LocationSerializer(
             return expandable_fields
 
 
-class ThingSerializer(
-        Select, Expand, DataArray, Representation,
-        NavigationLinks, serializers.ModelSerializer):
+class ThingSerializer(ControlInformation, Select, Expand, ResultFormat, serializers.ModelSerializer):
     """
     Serializer for the nested Things of the Datastreams entity.
     """
-    datastreamsLink = serializers.SerializerMethodField()
-    locationsLink = serializers.SerializerMethodField()
-    historicallocationsLink = serializers.SerializerMethodField()
+    selfLink = serializers.SerializerMethodField()
+    navigationLinks = serializers.SerializerMethodField()
 
     class Meta:
         model = Thing
         fields = (
             'id',
             'selfLink',
-            'datastreamsLink',
-            'locationsLink',
-            'historicallocationsLink',
+            'navigationLinks',
             'name',
             'description',
             'properties'
@@ -154,23 +138,23 @@ class ThingSerializer(
 
         def get_expandable_fields(*args):
             expandable_fields = {
-                'Datastreams': (
-                    DataStreamSerializer,
+                'Datastream': (
+                    DatastreamSerializer,
                     (),
                     {'many': True}
                 ),
-                'Locations': (
+                'Location': (
                     LocationSerializer,
                     (),
                     {'many': True}
                 ),
-                'HistoricalLocations': (
+                'HistoricalLocation': (
                     HistoricalLocationSerializer,
                     (),
                     {'many': True}
                 )
             }
-            Conflicts.conflicts.append('Things')
+            Conflicts.conflicts.append('Thing')
             for a in args:
                 if a in Conflicts.conflicts:
                     expandable_fields.pop(a, expandable_fields)
@@ -179,20 +163,19 @@ class ThingSerializer(
             return expandable_fields
 
 
-class SensorSerializer(
-        Select, Expand, DataArray, Representation,
-        NavigationLinks, serializers.ModelSerializer):
+class SensorSerializer(ControlInformation, Select, Expand, ResultFormat, serializers.ModelSerializer):
     """
     Serializer for the nested Sensors of the Datastreams entity.
     """
-    datastreamsLink = serializers.SerializerMethodField()
+    selfLink = serializers.SerializerMethodField()
+    navigationLinks = serializers.SerializerMethodField()
 
     class Meta:
         model = Sensor
         fields = (
             'id',
             'selfLink',
-            'datastreamsLink',
+            'navigationLinks',
             'name',
             'description',
             'encodingType',
@@ -202,12 +185,12 @@ class SensorSerializer(
         def get_expandable_fields(*args):
             expandable_fields = {
                 'Datastream': (
-                    DataStreamSerializer,
+                    DatastreamSerializer,
                     (),
                     {'many': True}
                 )
             }
-            Conflicts.conflicts.append('Sensors')
+            Conflicts.conflicts.append('Sensor')
             for a in args:
                 if a in Conflicts.conflicts:
                     expandable_fields.pop(a, expandable_fields)
@@ -216,21 +199,20 @@ class SensorSerializer(
             return expandable_fields
 
 
-class ObservedPropertySerializer(
-        Select, Expand, DataArray, Representation,
-        NavigationLinks, serializers.ModelSerializer):
+class ObservedPropertySerializer(ControlInformation, Select, Expand, ResultFormat, serializers.ModelSerializer):
     """
     Serializer for the nested Observed Properties of the
     Datastreams entity.
     """
-    datastreamsLink = serializers.SerializerMethodField()
+    selfLink = serializers.SerializerMethodField()
+    navigationLinks = serializers.SerializerMethodField()
 
     class Meta:
         model = ObservedProperty
         fields = (
             'id',
             'selfLink',
-            'datastreamsLink',
+            'navigationLinks',
             'name',
             'definition',
             'description'
@@ -239,12 +221,12 @@ class ObservedPropertySerializer(
         def get_expandable_fields(*args):
             expandable_fields = {
                 'Datastream': (
-                    DataStreamSerializer,
+                    DatastreamSerializer,
                     (),
                     {'many': True}
                 )
             }
-            Conflicts.conflicts.append('ObservedProperties')
+            Conflicts.conflicts.append('ObservedProperty')
             for a in args:
                 if a in Conflicts.conflicts:
                     expandable_fields.pop(a, expandable_fields)
@@ -253,22 +235,19 @@ class ObservedPropertySerializer(
             return expandable_fields
 
 
-class ObservationSerializer(
-        Select, Expand, DataArray, Representation,
-        NavigationLinks, serializers.ModelSerializer):
+class ObservationSerializer(ControlInformation, Select, Expand, ResultFormat, serializers.ModelSerializer):
     """
     Serializer for the nested Observations of the Datastreams entity.
     """
-    datastreamsLink = serializers.SerializerMethodField()
-    featuresOfInterestLink = serializers.SerializerMethodField()
+    selfLink = serializers.SerializerMethodField()
+    navigationLinks = serializers.SerializerMethodField()
 
     class Meta:
         model = Observation
         fields = (
             'id',
             'selfLink',
-            'datastreamsLink',
-            'featuresOfInterestLink',
+            'navigationLinks',
             'phenomenonTime',
             'result',
             'resultTime'
@@ -276,10 +255,10 @@ class ObservationSerializer(
 
         def get_expandable_fields(*args):
             expandable_fields = {
-                'Datastream': (DataStreamSerializer),
-                'FeatureOfInterest': (FeatureOfInterestSerializer),
+                'Datastream': DatastreamSerializer,
+                'FeatureOfInterest': FeatureOfInterestSerializer,
             }
-            Conflicts.conflicts.append('Observations')
+            Conflicts.conflicts.append('Observation')
             for a in args:
                 if a in Conflicts.conflicts:
                     expandable_fields.pop(a, expandable_fields)
@@ -288,26 +267,19 @@ class ObservationSerializer(
             return expandable_fields
 
 
-class DataStreamSerializer(
-        Select, Expand, DataArray, Representation,
-        NavigationLinks, serializers.ModelSerializer):
+class DatastreamSerializer(ControlInformation, Select, Expand, ResultFormat, serializers.ModelSerializer):
     """
     Base serializer for the Datastreams entity.
     """
-    thingsLink = serializers.SerializerMethodField()
-    observationsLink = serializers.SerializerMethodField()
-    observedpropertiesLink = serializers.SerializerMethodField()
-    sensorsLink = serializers.SerializerMethodField()
+    selfLink = serializers.SerializerMethodField()
+    navigationLinks = serializers.SerializerMethodField()
 
     class Meta:
-        model = DataStream
+        model = Datastream
         fields = (
             'id',
             'selfLink',
-            'thingsLink',
-            'observationsLink',
-            'observedpropertiesLink',
-            'sensorsLink',
+            'navigationLinks',
             'name',
             'description',
             'unitOfMeasurement',
@@ -319,16 +291,16 @@ class DataStreamSerializer(
 
         def get_expandable_fields(*args):
             expandable_fields = {
-                'Thing': (ThingSerializer),
-                'Sensor': (SensorSerializer),
-                'ObservedProperty': (ObservedPropertySerializer),
-                'Observations': (
+                'Thing': ThingSerializer,
+                'Sensor': SensorSerializer,
+                'ObservedProperty': ObservedPropertySerializer,
+                'Observation': (
                     ObservationSerializer,
                     (),
                     {'many': True}
                 )
             }
-            Conflicts.conflicts.append('Datastreams')
+            Conflicts.conflicts.append('Datastream')
             for a in args:
                 if a in Conflicts.conflicts:
                     expandable_fields.pop(a, expandable_fields)
