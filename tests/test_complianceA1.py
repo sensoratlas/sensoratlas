@@ -2,7 +2,7 @@ from rest_framework.reverse import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from sensorAtlas.models import Thing, Location, HistoricalLocation, \
-    DataStream, Sensor, ObservedProperty, Observation, FeatureOfInterest
+    Datastream, Sensor, ObservedProperty, Observation, FeatureOfInterest
 from django.contrib.gis.geos import Point, Polygon
 from django.utils import timezone
 
@@ -18,60 +18,66 @@ class A_1_1(APITestCase):
         """
         Create test resources
         """
-        observed_property = ObservedProperty.objects.create(
-            name='Temperature',
-            definition='https://wikipedia.org',
-            description='This is a test'
-            )
-        sensor = Sensor.objects.create(
-            name='Temperature Sensor',
-            description='This is a sensor test',
-            encodingType='PDF',
-            metadata='This is some very descriptive metadata.'
-            )
-        location = Location.objects.create(
-            name='Location 1',
-            description='This is a sensor test',
-            encodingType='application/vnd.geo+json',
-            location=Point(954158.1, 4215137.1, srid=32140)
-            )
-        thing = Thing.objects.create(
-            name='Thing 1',
-            description='This is a thing',
-            properties={}
-            )
-        historicallocation = HistoricalLocation.objects.create(
-            time=timezone.now(),
-            Thing=thing
-        )
-        historicallocation.Locations.add(location)
-        featureofinterest = FeatureOfInterest.objects.create(
-            name='Usidore',
-            description='this is a place',
-            encodingType='application/vnd.geo+json',
-            feature=Polygon(((0.0, 0.0),
-                             (0.0, 50.0),
-                             (50.0, 50.0),
-                             (50.0, 0.0),
-                             (0.0, 0.0))
-                            ))
-        datastream = DataStream.objects.create(
-            name='Chunt',
-            description='Bing Bong',
-            observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
-            unitOfMeasurement={"Race": "Badger",
-                               "Class": "Shapeshifter"},
-            Thing=Thing.objects.get(name='Thing 1'),
-            Sensor=sensor,
-            ObservedProperty=observed_property
-            )
-        Observation.objects.create(
-            phenomenonTime="2017-02-07T18:02:00.000Z",
-            result=42,
-            Datastream=datastream,
-            FeatureOfInterest=featureofinterest,
-            resultTime="2017-02-07T18:02:00.000Z",
-            )
+        url = reverse('observation-list', kwargs={'version': 'v1.0'})
+        data = {
+            "phenomenonTime": "2017-02-07T18:02:00.000Z",
+            "resultTime": "2017-02-07T18:02:05.000Z",
+            "result": 21.6,
+            "Datastream": {
+                "name": "Air Temperature DS",
+                "description": "Datastream for recording temperature",
+                "observationType": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+                "unitOfMeasurement": {
+                    "name": "Degree Celsius",
+                    "symbol": "degC",
+                    "definition": "http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#DegreeCelsius"
+                },
+                "ObservedProperty": {
+                    "name": "Area Temperature",
+                    "description": "The degree or intensity of heat present in the area",
+                    "definition": "http://www.qudt.org/qudt/owl/1.0.0/quantity/Instances.html#AreaTemperature"
+                },
+                "Sensor": {
+                    "name": "DHT22",
+                    "description": "DHT22 temperature sensor",
+                    "encodingType": "application/pdf",
+                    "metadata": "https://cdn-shop.adafruit.com/datasheets/DHT22.pdf"
+                },
+                "Thing": {
+                    "name": "Temperature Monitoring System",
+                    "description": "Sensor system monitoring area temperature",
+                    "properties": {
+                        "Deployment Condition": "Deployed in a third floor balcony",
+                        "Case Used": "Radiation shield"
+                    },
+                    "Locations": [
+                        {
+                            "name": "UofC CCIT",
+                            "description": "University of Calgary, CCIT building",
+                            "encodingType": "application/vnd.geo+json",
+                            "location": {
+                                "type": "Point",
+                                "coordinates": [-114.133, 51.08]
+                            }
+                        }
+                    ]
+                }
+            },
+            "FeatureOfInterest": {
+                "name": "UofC CCIT",
+                "description": "University of Calgary, CCIT building",
+                "encodingType": "application/vnd.geo+json",
+                "feature": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]
+                        ]
+                    ]
+                }
+            }
+        }
+        self.client.post(url, data, format='json')
 
     def test_requirement1(self):
         urls = [
@@ -131,9 +137,9 @@ class A_1_2(APITestCase):
         """
         thing = Thing.objects.get(name='Thing 1')
         entities = [
-            'Locations',
-            'HistoricalLocations',
-            'Datastreams'
+            'Location',
+            'HistoricalLocation',
+            'Datastream'
         ]
         for entity in entities:
             self.assertTrue(hasattr(thing, entity))
@@ -175,8 +181,8 @@ class A_1_3(APITestCase):
         """
         location = Location.objects.get(name='Location 1')
         entities = [
-            'Things',
-            'HistoricalLocations'
+            'Thing',
+            'HistoricalLocation'
         ]
         for entity in entities:
             self.assertTrue(hasattr(location, entity))
@@ -206,7 +212,7 @@ class A_1_4(APITestCase):
             time=timezone.now(),
             Thing=thing
         )
-        historicallocation.Locations.add(location)
+        historicallocation.Location.add(location)
 
     def test_historicallocation_properties(self):
         """
@@ -226,7 +232,7 @@ class A_1_4(APITestCase):
         hlocat = HistoricalLocation.objects.get(Thing__name="Thing 1")
         entities = [
             'Thing',
-            'Locations'
+            'Location'
         ]
         for entity in entities:
             self.assertTrue(hasattr(hlocat, entity))
@@ -257,7 +263,7 @@ class A_1_5(APITestCase):
             definition='https://wikipedia.org',
             description='This is a test'
             )
-        DataStream.objects.create(
+        Datastream.objects.create(
             name='Chunt',
             description='Bing Bong',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
@@ -272,7 +278,7 @@ class A_1_5(APITestCase):
         """
         Tests requirement 9.
         """
-        datastream = DataStream.objects.get(name='Chunt')
+        datastream = Datastream.objects.get(name='Chunt')
         properties = [
             'name',
             'description',
@@ -289,12 +295,12 @@ class A_1_5(APITestCase):
         """
         Tests requirement 10.
         """
-        datastream = DataStream.objects.get(name='Chunt')
+        datastream = Datastream.objects.get(name='Chunt')
         entities = [
             'Thing',
             'Sensor',
             'ObservedProperty',
-            'Observations'
+            'Observation'
         ]
         for entity in entities:
             self.assertTrue(hasattr(datastream, entity))
@@ -336,7 +342,7 @@ class A_1_6(APITestCase):
         """
         sensor = Sensor.objects.get(name='Temperature Sensor')
         entities = [
-            'Datastreams'
+            'Datastream'
         ]
         for entity in entities:
             self.assertTrue(hasattr(sensor, entity))
@@ -376,7 +382,7 @@ class A_1_7(APITestCase):
         """
         observedproperty = ObservedProperty.objects.get(name='Temperature')
         entities = [
-            'Datastreams'
+            'Datastream'
         ]
         for entity in entities:
             self.assertTrue(hasattr(observedproperty, entity))
@@ -407,7 +413,7 @@ class A_1_8(APITestCase):
             definition='https://wikipedia.org',
             description='This is a test'
             )
-        DataStream.objects.create(
+        Datastream.objects.create(
             name='Chunt',
             description='Bing Bong',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
@@ -431,7 +437,7 @@ class A_1_8(APITestCase):
             phenomenonTime="2019-02-07T18:00:00.000Z",
             result=42,
             resultTime="2019-02-07T18:00:00.000Z",
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore')
             )
 
@@ -504,7 +510,7 @@ class A_1_9(APITestCase):
         """
         featureofinterest = FeatureOfInterest.objects.get(name='Usidore')
         entities = [
-            'Observations'
+            'Observation'
         ]
         for entity in entities:
             self.assertTrue(hasattr(featureofinterest, entity))
@@ -543,7 +549,7 @@ class A_1_10(APITestCase):
             description='This is a thing',
             properties={}
             )
-        thing.Locations.add(location)
+        thing.Location.add(location)
         FeatureOfInterest.objects.create(
             name='Usidore',
             description='this is a place',
@@ -554,7 +560,7 @@ class A_1_10(APITestCase):
                              (50.0, 0.0),
                              (0.0, 0.0))
                             ))
-        DataStream.objects.create(
+        Datastream.objects.create(
             name='Chunt',
             description='Bing Bong',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
@@ -573,42 +579,42 @@ class A_1_10(APITestCase):
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:01:00.000Z",
             result=42,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:01:00.000Z",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:02:00.000Z",
             result=3,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:02:00.000Z",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:03:00.000Z",
             result=15.7,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:04:00.000Z",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:04:00.000Z",
             result=23,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:04:00.000Z",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:05:00.000Z",
             result=1,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:05:00.000Z",
             )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:06:00.000Z",
             result=35,
-            Datastream=DataStream.objects.get(name="Chunt"),
+            Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:06:00.000Z",
             )
@@ -634,13 +640,13 @@ class A_1_10(APITestCase):
         the appropriate response is returned.
         """
         thing = Thing.objects.get(name='Thing 1')
-        location = thing.Locations.get(name='Location 1')
+        location = thing.Location.get(name='Location 1')
         hlocat = HistoricalLocation.objects.get(Thing__name=thing.name)
-        datastream = DataStream.objects.get(Thing__name=thing.name)
-        sensor = Sensor.objects.get(Datastreams__name=datastream.name)
-        oprop = ObservedProperty.objects.get(Datastreams__name=datastream.name)
+        datastream = Datastream.objects.get(Thing__name=thing.name)
+        sensor = Sensor.objects.get(Datastream__name=datastream.name)
+        oprop = ObservedProperty.objects.get(Datastream__name=datastream.name)
         obs = Observation.objects.filter(Datastream__name=datastream.name)
-        foi = FeatureOfInterest.objects.get(Observations__id=obs[0].id)
+        foi = FeatureOfInterest.objects.get(Observation__id=obs[0].id)
 
         url = reverse('thing-list', kwargs={'version': 'v1.0'})
         response = self.client.get(url, format='json')
@@ -686,7 +692,7 @@ class A_1_10(APITestCase):
         url = reverse('location-list',
                       kwargs={'version': 'v1.0',
                               'Things_pk': thing.id,
-                              'nested_2_pk': hlocat.id
+                              'HistoricalLocations_pk': hlocat.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -694,7 +700,7 @@ class A_1_10(APITestCase):
         url = reverse('location-detail',
                       kwargs={'version': 'v1.0',
                               'Things_pk': thing.id,
-                              'nested_2_pk': hlocat.id,
+                              'HistoricalLocations_pk': hlocat.id,
                               'pk': location.id
                               })
         response = self.client.get(url, format='json')
@@ -703,7 +709,7 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-list',
                       kwargs={'version': 'v1.0',
                               'Things_pk': thing.id,
-                              'nested_2_pk': location.id
+                              'Locations_pk': location.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -711,7 +717,7 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-detail',
                       kwargs={'version': 'v1.0',
                               'Things_pk': thing.id,
-                              'nested_2_pk': location.id,
+                              'Locations_pk': location.id,
                               'pk': hlocat.id
                               })
         response = self.client.get(url, format='json')
@@ -735,7 +741,7 @@ class A_1_10(APITestCase):
         url = reverse('sensor-list',
                       kwargs={'version': 'v1.0',
                               'Things_pk': thing.id,
-                              'nested_2_pk': datastream.id
+                              'Datastreams_pk': datastream.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -743,7 +749,7 @@ class A_1_10(APITestCase):
         url = reverse('sensor-detail',
                       kwargs={'version': 'v1.0',
                               'Things_pk': thing.id,
-                              'nested_2_pk': datastream.id,
+                              'Datastreams_pk': datastream.id,
                               'pk': sensor.id
                               })
         response = self.client.get(url, format='json')
@@ -752,7 +758,7 @@ class A_1_10(APITestCase):
         url = reverse('observedproperty-list',
                       kwargs={'version': 'v1.0',
                               'Things_pk': thing.id,
-                              'nested_2_pk': datastream.id
+                              'Datastreams_pk': datastream.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -760,7 +766,7 @@ class A_1_10(APITestCase):
         url = reverse('observedproperty-detail',
                       kwargs={'version': 'v1.0',
                               'Things_pk': thing.id,
-                              'nested_2_pk': datastream.id,
+                              'Datastreams_pk': datastream.id,
                               'pk': oprop.id
                               })
         response = self.client.get(url, format='json')
@@ -769,7 +775,7 @@ class A_1_10(APITestCase):
         url = reverse('observation-list',
                       kwargs={'version': 'v1.0',
                               'Things_pk': thing.id,
-                              'nested_2_pk': datastream.id
+                              'Datastreams_pk': datastream.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -777,7 +783,7 @@ class A_1_10(APITestCase):
         url = reverse('observation-detail',
                       kwargs={'version': 'v1.0',
                               'Things_pk': thing.id,
-                              'nested_2_pk': datastream.id,
+                              'Datastreams_pk': datastream.id,
                               'pk': obs[0].id
                               })
         response = self.client.get(url, format='json')
@@ -786,8 +792,8 @@ class A_1_10(APITestCase):
         url = reverse('featureofinterest-list',
                       kwargs={'version': 'v1.0',
                               'Things_pk': thing.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': obs[0].id,
+                              'Datastreams_pk': datastream.id,
+                              'Observations_pk': obs[0].id,
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -795,8 +801,8 @@ class A_1_10(APITestCase):
         url = reverse('featureofinterest-detail',
                       kwargs={'version': 'v1.0',
                               'Things_pk': thing.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': obs[0].id,
+                              'Datastreams_pk': datastream.id,
+                              'Observations_pk': obs[0].id,
                               'pk': foi.id
                               })
         response = self.client.get(url, format='json')
@@ -808,13 +814,13 @@ class A_1_10(APITestCase):
         the appropriate response is returned.
         """
         location = Location.objects.get(name='Location 1')
-        thing = Thing.objects.filter(Locations__name=location.name)
-        hlocat = HistoricalLocation.objects.filter(Locations__name=location.name)
-        datastream = DataStream.objects.filter(Thing__name=thing[0].name)
-        sensor = Sensor.objects.filter(Datastreams__name=datastream[0].name)
-        oprop = ObservedProperty.objects.filter(Datastreams__name=datastream[0].name)
+        thing = Thing.objects.filter(Location__name=location.name)
+        hlocat = HistoricalLocation.objects.filter(Location__name=location.name)
+        datastream = Datastream.objects.filter(Thing__name=thing[0].name)
+        sensor = Sensor.objects.filter(Datastream__name=datastream[0].name)
+        oprop = ObservedProperty.objects.filter(Datastream__name=datastream[0].name)
         obs = Observation.objects.filter(Datastream__name=datastream[0].name)
-        foi = FeatureOfInterest.objects.get(Observations__id=obs[0].id)
+        foi = FeatureOfInterest.objects.get(Observation__id=obs[0].id)
 
         url = reverse('location-list', kwargs={'version': 'v1.0'})
         response = self.client.get(url, format='json')
@@ -860,7 +866,7 @@ class A_1_10(APITestCase):
         url = reverse('datastream-list',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': thing[0].id
+                              'Things_pk': thing[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -868,7 +874,7 @@ class A_1_10(APITestCase):
         url = reverse('datastream-detail',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': thing[0].id,
+                              'Things_pk': thing[0].id,
                               'pk': datastream[0].id
                               })
         response = self.client.get(url, format='json')
@@ -877,8 +883,8 @@ class A_1_10(APITestCase):
         url = reverse('sensor-list',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': thing[0].id,
-                              'nested_3_pk': datastream[0].id
+                              'Things_pk': thing[0].id,
+                              'Datastreams_pk': datastream[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -886,8 +892,8 @@ class A_1_10(APITestCase):
         url = reverse('sensor-detail',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': thing[0].id,
-                              'nested_3_pk': datastream[0].id,
+                              'Things_pk': thing[0].id,
+                              'Datastreams_pk': datastream[0].id,
                               'pk': sensor[0].id
                               })
         response = self.client.get(url, format='json')
@@ -896,8 +902,8 @@ class A_1_10(APITestCase):
         url = reverse('observedproperty-list',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': thing[0].id,
-                              'nested_3_pk': datastream[0].id
+                              'Things_pk': thing[0].id,
+                              'Datastreams_pk': datastream[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -905,8 +911,8 @@ class A_1_10(APITestCase):
         url = reverse('observedproperty-detail',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': thing[0].id,
-                              'nested_3_pk': datastream[0].id,
+                              'Things_pk': thing[0].id,
+                              'Datastreams_pk': datastream[0].id,
                               'pk': oprop[0].id
                               })
         response = self.client.get(url, format='json')
@@ -915,8 +921,8 @@ class A_1_10(APITestCase):
         url = reverse('observation-list',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': thing[0].id,
-                              'nested_3_pk': datastream[0].id
+                              'Things_pk': thing[0].id,
+                              'Datastreams_pk': datastream[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -924,8 +930,8 @@ class A_1_10(APITestCase):
         url = reverse('observation-detail',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': thing[0].id,
-                              'nested_3_pk': datastream[0].id,
+                              'Things_pk': thing[0].id,
+                              'Datastreams_pk': datastream[0].id,
                               'pk': obs[0].id
                               })
         response = self.client.get(url, format='json')
@@ -934,9 +940,9 @@ class A_1_10(APITestCase):
         url = reverse('featureofinterest-list',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': thing[0].id,
-                              'nested_3_pk': datastream[0].id,
-                              'nested_4_pk': obs[0].id,
+                              'Things_pk': thing[0].id,
+                              'Datastreams_pk': datastream[0].id,
+                              'Observations_pk': obs[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -944,9 +950,9 @@ class A_1_10(APITestCase):
         url = reverse('featureofinterest-detail',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': thing[0].id,
-                              'nested_3_pk': datastream[0].id,
-                              'nested_4_pk': obs[0].id,
+                              'Things_pk': thing[0].id,
+                              'Datastreams_pk': datastream[0].id,
+                              'Observations_pk': obs[0].id,
                               'pk': foi.id
                               })
         response = self.client.get(url, format='json')
@@ -955,7 +961,7 @@ class A_1_10(APITestCase):
         url = reverse('thing-list',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': hlocat[0].id
+                              'HistoricalLocations_pk': hlocat[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -963,7 +969,7 @@ class A_1_10(APITestCase):
         url = reverse('thing-detail',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': hlocat[0].id,
+                              'HistoricalLocations_pk': hlocat[0].id,
                               'pk': thing[0].id
                               })
         response = self.client.get(url, format='json')
@@ -972,8 +978,8 @@ class A_1_10(APITestCase):
         url = reverse('datastream-list',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': hlocat[0].id,
-                              'nested_3_pk': thing[0].id
+                              'HistoricalLocations_pk': hlocat[0].id,
+                              'Things_pk': thing[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -981,8 +987,8 @@ class A_1_10(APITestCase):
         url = reverse('datastream-detail',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': hlocat[0].id,
-                              'nested_3_pk': thing[0].id,
+                              'HistoricalLocations_pk': hlocat[0].id,
+                              'Things_pk': thing[0].id,
                               'pk': datastream[0].id
                               })
         response = self.client.get(url, format='json')
@@ -991,9 +997,9 @@ class A_1_10(APITestCase):
         url = reverse('sensor-list',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': hlocat[0].id,
-                              'nested_3_pk': thing[0].id,
-                              'nested_4_pk': datastream[0].id
+                              'HistoricalLocations_pk': hlocat[0].id,
+                              'Things_pk': thing[0].id,
+                              'Datastreams_pk': datastream[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1001,9 +1007,9 @@ class A_1_10(APITestCase):
         url = reverse('sensor-detail',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': hlocat[0].id,
-                              'nested_3_pk': thing[0].id,
-                              'nested_4_pk': datastream[0].id,
+                              'HistoricalLocations_pk': hlocat[0].id,
+                              'Things_pk': thing[0].id,
+                              'Datastreams_pk': datastream[0].id,
                               'pk': sensor[0].id
                               })
         response = self.client.get(url, format='json')
@@ -1012,9 +1018,9 @@ class A_1_10(APITestCase):
         url = reverse('observedproperty-list',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': hlocat[0].id,
-                              'nested_3_pk': thing[0].id,
-                              'nested_4_pk': datastream[0].id
+                              'HistoricalLocations_pk': hlocat[0].id,
+                              'Things_pk': thing[0].id,
+                              'Datastreams_pk': datastream[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1022,9 +1028,9 @@ class A_1_10(APITestCase):
         url = reverse('observedproperty-detail',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': hlocat[0].id,
-                              'nested_3_pk': thing[0].id,
-                              'nested_4_pk': datastream[0].id,
+                              'HistoricalLocations_pk': hlocat[0].id,
+                              'Things_pk': thing[0].id,
+                              'Datastreams_pk': datastream[0].id,
                               'pk': oprop[0].id
                               })
         response = self.client.get(url, format='json')
@@ -1033,9 +1039,9 @@ class A_1_10(APITestCase):
         url = reverse('observation-list',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': hlocat[0].id,
-                              'nested_3_pk': thing[0].id,
-                              'nested_4_pk': datastream[0].id
+                              'HistoricalLocations_pk': hlocat[0].id,
+                              'Things_pk': thing[0].id,
+                              'Datastreams_pk': datastream[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1043,9 +1049,9 @@ class A_1_10(APITestCase):
         url = reverse('observation-detail',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': hlocat[0].id,
-                              'nested_3_pk': thing[0].id,
-                              'nested_4_pk': datastream[0].id,
+                              'HistoricalLocations_pk': hlocat[0].id,
+                              'Things_pk': thing[0].id,
+                              'Datastreams_pk': datastream[0].id,
                               'pk': obs[0].id
                               })
         response = self.client.get(url, format='json')
@@ -1054,10 +1060,10 @@ class A_1_10(APITestCase):
         url = reverse('featureofinterest-list',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': hlocat[0].id,
-                              'nested_3_pk': thing[0].id,
-                              'nested_4_pk': datastream[0].id,
-                              'nested_5_pk': obs[0].id,
+                              'HistoricalLocations_pk': hlocat[0].id,
+                              'Things_pk': thing[0].id,
+                              'Datastreams_pk': datastream[0].id,
+                              'Observations_pk': obs[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1065,10 +1071,10 @@ class A_1_10(APITestCase):
         url = reverse('featureofinterest-detail',
                       kwargs={'version': 'v1.0',
                               'Locations_pk': location.id,
-                              'nested_2_pk': hlocat[0].id,
-                              'nested_3_pk': thing[0].id,
-                              'nested_4_pk': datastream[0].id,
-                              'nested_5_pk': obs[0].id,
+                              'HistoricalLocations_pk': hlocat[0].id,
+                              'Things_pk': thing[0].id,
+                              'Datastreams_pk': datastream[0].id,
+                              'Observations_pk': obs[0].id,
                               'pk': foi.id
                               })
         response = self.client.get(url, format='json')
@@ -1079,14 +1085,14 @@ class A_1_10(APITestCase):
         Ensure that all nested paths for the Historical Locations entity are
         available and the appropriate response is returned.
         """
-        hlocat = HistoricalLocation.objects.get(Locations__name='Location 1')
-        thing = Thing.objects.get(HistoricalLocations__id=hlocat.id)
-        location = Location.objects.get(HistoricalLocations__id=hlocat.id)
-        datastream = DataStream.objects.filter(Thing__name=thing.name)
-        sensor = Sensor.objects.filter(Datastreams__name=datastream[0].name)
-        oprop = ObservedProperty.objects.filter(Datastreams__name=datastream[0].name)
+        hlocat = HistoricalLocation.objects.get(Location__name='Location 1')
+        thing = Thing.objects.get(HistoricalLocation__id=hlocat.id)
+        location = Location.objects.get(HistoricalLocation__id=hlocat.id)
+        datastream = Datastream.objects.filter(Thing__name=thing.name)
+        sensor = Sensor.objects.filter(Datastream__name=datastream[0].name)
+        oprop = ObservedProperty.objects.filter(Datastream__name=datastream[0].name)
         obs = Observation.objects.filter(Datastream__name=datastream[0].name)
-        foi = FeatureOfInterest.objects.get(Observations__id=obs[0].id)
+        foi = FeatureOfInterest.objects.get(Observation__id=obs[0].id)
 
         url = reverse('historicallocation-list', kwargs={'version': 'v1.0'})
         response = self.client.get(url, format='json')
@@ -1132,7 +1138,7 @@ class A_1_10(APITestCase):
         url = reverse('datastream-list',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': thing.id
+                              'Thing_pk': thing.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1140,7 +1146,7 @@ class A_1_10(APITestCase):
         url = reverse('datastream-detail',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': thing.id,
+                              'Thing_pk': thing.id,
                               'pk': datastream[0].id
                               })
         response = self.client.get(url, format='json')
@@ -1149,8 +1155,8 @@ class A_1_10(APITestCase):
         url = reverse('sensor-list',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': thing.id,
-                              'nested_3_pk': datastream[0].id
+                              'Thing_pk': thing.id,
+                              'Datastreams_pk': datastream[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1158,8 +1164,8 @@ class A_1_10(APITestCase):
         url = reverse('sensor-detail',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': thing.id,
-                              'nested_3_pk': datastream[0].id,
+                              'Thing_pk': thing.id,
+                              'Datastreams_pk': datastream[0].id,
                               'pk': sensor[0].id
                               })
         response = self.client.get(url, format='json')
@@ -1168,8 +1174,8 @@ class A_1_10(APITestCase):
         url = reverse('observedproperty-list',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': thing.id,
-                              'nested_3_pk': datastream[0].id
+                              'Thing_pk': thing.id,
+                              'Datastreams_pk': datastream[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1177,8 +1183,8 @@ class A_1_10(APITestCase):
         url = reverse('observedproperty-detail',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': thing.id,
-                              'nested_3_pk': datastream[0].id,
+                              'Thing_pk': thing.id,
+                              'Datastreams_pk': datastream[0].id,
                               'pk': oprop[0].id
                               })
         response = self.client.get(url, format='json')
@@ -1187,8 +1193,8 @@ class A_1_10(APITestCase):
         url = reverse('observation-list',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': thing.id,
-                              'nested_3_pk': datastream[0].id
+                              'Thing_pk': thing.id,
+                              'Datastreams_pk': datastream[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1196,8 +1202,8 @@ class A_1_10(APITestCase):
         url = reverse('observation-detail',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': thing.id,
-                              'nested_3_pk': datastream[0].id,
+                              'Thing_pk': thing.id,
+                              'Datastreams_pk': datastream[0].id,
                               'pk': obs[0].id
                               })
         response = self.client.get(url, format='json')
@@ -1206,9 +1212,9 @@ class A_1_10(APITestCase):
         url = reverse('featureofinterest-list',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': thing.id,
-                              'nested_3_pk': datastream[0].id,
-                              'nested_4_pk': obs[0].id,
+                              'Thing_pk': thing.id,
+                              'Datastreams_pk': datastream[0].id,
+                              'Observations_pk': obs[0].id,
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1216,9 +1222,9 @@ class A_1_10(APITestCase):
         url = reverse('featureofinterest-detail',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': thing.id,
-                              'nested_3_pk': datastream[0].id,
-                              'nested_4_pk': obs[0].id,
+                              'Thing_pk': thing.id,
+                              'Datastreams_pk': datastream[0].id,
+                              'Observations_pk': obs[0].id,
                               'pk': foi.id
                               })
         response = self.client.get(url, format='json')
@@ -1227,7 +1233,7 @@ class A_1_10(APITestCase):
         url = reverse('thing-list',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': location.id
+                              'Locations_pk': location.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1235,7 +1241,7 @@ class A_1_10(APITestCase):
         url = reverse('thing-detail',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': location.id,
+                              'Locations_pk': location.id,
                               'pk': thing.id
                               })
         response = self.client.get(url, format='json')
@@ -1244,8 +1250,8 @@ class A_1_10(APITestCase):
         url = reverse('datastream-list',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': location.id,
-                              'nested_3_pk': thing.id
+                              'Locations_pk': location.id,
+                              'Thing_pk': thing.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1253,8 +1259,8 @@ class A_1_10(APITestCase):
         url = reverse('datastream-detail',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': location.id,
-                              'nested_3_pk': thing.id,
+                              'Locations_pk': location.id,
+                              'Thing_pk': thing.id,
                               'pk': datastream[0].id
                               })
         response = self.client.get(url, format='json')
@@ -1263,9 +1269,9 @@ class A_1_10(APITestCase):
         url = reverse('sensor-list',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': location.id,
-                              'nested_3_pk': thing.id,
-                              'nested_4_pk': datastream[0].id
+                              'Locations_pk': location.id,
+                              'Thing_pk': thing.id,
+                              'Datastreams_pk': datastream[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1273,9 +1279,9 @@ class A_1_10(APITestCase):
         url = reverse('sensor-detail',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': location.id,
-                              'nested_3_pk': thing.id,
-                              'nested_4_pk': datastream[0].id,
+                              'Locations_pk': location.id,
+                              'Thing_pk': thing.id,
+                              'Datastreams_pk': datastream[0].id,
                               'pk': sensor[0].id
                               })
         response = self.client.get(url, format='json')
@@ -1284,9 +1290,9 @@ class A_1_10(APITestCase):
         url = reverse('observedproperty-list',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': location.id,
-                              'nested_3_pk': thing.id,
-                              'nested_4_pk': datastream[0].id
+                              'Locations_pk': location.id,
+                              'Thing_pk': thing.id,
+                              'Datastreams_pk': datastream[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1294,9 +1300,9 @@ class A_1_10(APITestCase):
         url = reverse('observedproperty-detail',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': location.id,
-                              'nested_3_pk': thing.id,
-                              'nested_4_pk': datastream[0].id,
+                              'Locations_pk': location.id,
+                              'Thing_pk': thing.id,
+                              'Datastreams_pk': datastream[0].id,
                               'pk': oprop[0].id
                               })
         response = self.client.get(url, format='json')
@@ -1305,9 +1311,9 @@ class A_1_10(APITestCase):
         url = reverse('observation-list',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': location.id,
-                              'nested_3_pk': thing.id,
-                              'nested_4_pk': datastream[0].id
+                              'Locations_pk': location.id,
+                              'Thing_pk': thing.id,
+                              'Datastreams_pk': datastream[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1315,9 +1321,9 @@ class A_1_10(APITestCase):
         url = reverse('observation-detail',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': location.id,
-                              'nested_3_pk': thing.id,
-                              'nested_4_pk': datastream[0].id,
+                              'Locations_pk': location.id,
+                              'Thing_pk': thing.id,
+                              'Datastreams_pk': datastream[0].id,
                               'pk': obs[0].id
                               })
         response = self.client.get(url, format='json')
@@ -1326,10 +1332,10 @@ class A_1_10(APITestCase):
         url = reverse('featureofinterest-list',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': location.id,
-                              'nested_3_pk': thing.id,
-                              'nested_4_pk': datastream[0].id,
-                              'nested_5_pk': obs[0].id,
+                              'Locations_pk': location.id,
+                              'Thing_pk': thing.id,
+                              'Datastreams_pk': datastream[0].id,
+                              'Observations_pk': obs[0].id,
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1337,10 +1343,10 @@ class A_1_10(APITestCase):
         url = reverse('featureofinterest-detail',
                       kwargs={'version': 'v1.0',
                               'HistoricalLocations_pk': hlocat.id,
-                              'nested_2_pk': location.id,
-                              'nested_3_pk': thing.id,
-                              'nested_4_pk': datastream[0].id,
-                              'nested_5_pk': obs[0].id,
+                              'Locations_pk': location.id,
+                              'Thing_pk': thing.id,
+                              'Datastreams_pk': datastream[0].id,
+                              'Observations_pk': obs[0].id,
                               'pk': foi.id
                               })
         response = self.client.get(url, format='json')
@@ -1351,14 +1357,14 @@ class A_1_10(APITestCase):
         Ensure that all nested paths for the datastreams entity are available
         and the appropriate response is returned.
         """
-        datastream = DataStream.objects.get(name='Chunt')
+        datastream = Datastream.objects.get(name='Chunt')
         thing = datastream.Thing
-        location = datastream.Thing.Locations.get(name='Location 1')
+        location = datastream.Thing.Location.get(name='Location 1')
         hlocat = HistoricalLocation.objects.get(Thing__name=thing.name)
-        sensor = Sensor.objects.get(Datastreams__name=datastream.name)
-        oprop = ObservedProperty.objects.get(Datastreams__name=datastream.name)
+        sensor = Sensor.objects.get(Datastream__name=datastream.name)
+        oprop = ObservedProperty.objects.get(Datastream__name=datastream.name)
         obs = Observation.objects.filter(Datastream__name=datastream.name)
-        foi = FeatureOfInterest.objects.get(Observations__id=obs[0].id)
+        foi = FeatureOfInterest.objects.get(Observation__id=obs[0].id)
 
         url = reverse('datastream-list', kwargs={'version': 'v1.0'})
         response = self.client.get(url, format='json')
@@ -1389,7 +1395,7 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-list',
                       kwargs={'version': 'v1.0',
                               'Datastreams_pk': datastream.id,
-                              'nested_2_pk': thing.id
+                              'Thing_pk': thing.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1397,7 +1403,7 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-detail',
                       kwargs={'version': 'v1.0',
                               'Datastreams_pk': datastream.id,
-                              'nested_2_pk': thing.id,
+                              'Thing_pk': thing.id,
                               'pk': hlocat.id
                               })
         response = self.client.get(url, format='json')
@@ -1406,7 +1412,7 @@ class A_1_10(APITestCase):
         url = reverse('location-list',
                       kwargs={'version': 'v1.0',
                               'Datastreams_pk': datastream.id,
-                              'nested_2_pk': thing.id
+                              'Thing_pk': thing.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1414,7 +1420,7 @@ class A_1_10(APITestCase):
         url = reverse('location-detail',
                       kwargs={'version': 'v1.0',
                               'Datastreams_pk': datastream.id,
-                              'nested_2_pk': thing.id,
+                              'Thing_pk': thing.id,
                               'pk': location.id
                               })
         response = self.client.get(url, format='json')
@@ -1423,8 +1429,8 @@ class A_1_10(APITestCase):
         url = reverse('location-list',
                       kwargs={'version': 'v1.0',
                               'Datastreams_pk': datastream.id,
-                              'nested_2_pk': thing.id,
-                              'nested_3_pk': hlocat.id
+                              'Thing_pk': thing.id,
+                              'HistoricalLocations_pk': hlocat.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1432,8 +1438,8 @@ class A_1_10(APITestCase):
         url = reverse('location-detail',
                       kwargs={'version': 'v1.0',
                               'Datastreams_pk': datastream.id,
-                              'nested_2_pk': thing.id,
-                              'nested_3_pk': hlocat.id,
+                              'Thing_pk': thing.id,
+                              'HistoricalLocations_pk': hlocat.id,
                               'pk': location.id
                               })
         response = self.client.get(url, format='json')
@@ -1442,8 +1448,8 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-list',
                       kwargs={'version': 'v1.0',
                               'Datastreams_pk': datastream.id,
-                              'nested_2_pk': thing.id,
-                              'nested_3_pk': location.id
+                              'Thing_pk': thing.id,
+                              'Locations_pk': location.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1451,8 +1457,8 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-detail',
                       kwargs={'version': 'v1.0',
                               'Datastreams_pk': datastream.id,
-                              'nested_2_pk': thing.id,
-                              'nested_3_pk': location.id,
+                              'Thing_pk': thing.id,
+                              'Locations_pk': location.id,
                               'pk': hlocat.id
                               })
         response = self.client.get(url, format='json')
@@ -1506,7 +1512,7 @@ class A_1_10(APITestCase):
         url = reverse('featureofinterest-list',
                       kwargs={'version': 'v1.0',
                               'Datastreams_pk': datastream.id,
-                              'nested_2_pk': obs[0].id,
+                              'Observations_pk': obs[0].id,
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1514,7 +1520,7 @@ class A_1_10(APITestCase):
         url = reverse('featureofinterest-detail',
                       kwargs={'version': 'v1.0',
                               'Datastreams_pk': datastream.id,
-                              'nested_2_pk': obs[0].id,
+                              'Observations_pk': obs[0].id,
                               'pk': foi.id
                               })
         response = self.client.get(url, format='json')
@@ -1526,13 +1532,13 @@ class A_1_10(APITestCase):
         the appropriate response is returned.
         """
         sensor = Sensor.objects.get(name='Temperature Sensor')
-        datastream = DataStream.objects.get(Sensor__name=sensor.name)
+        datastream = Datastream.objects.get(Sensor__name=sensor.name)
         thing = datastream.Thing
-        location = thing.Locations.get(name='Location 1')
+        location = thing.Location.get(name='Location 1')
         hlocat = HistoricalLocation.objects.get(Thing__name=thing.name)
-        oprop = ObservedProperty.objects.get(Datastreams__name=datastream.name)
+        oprop = ObservedProperty.objects.get(Datastream__name=datastream.name)
         obs = Observation.objects.filter(Datastream__name=datastream.name)
-        foi = FeatureOfInterest.objects.get(Observations__id=obs[0].id)
+        foi = FeatureOfInterest.objects.get(Observation__id=obs[0].id)
 
         url = reverse('sensor-list', kwargs={'version': 'v1.0'})
         response = self.client.get(url, format='json')
@@ -1548,8 +1554,8 @@ class A_1_10(APITestCase):
         url = reverse('location-list',
                       kwargs={'version': 'v1.0',
                               'Sensors_pk': sensor.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
+                              'Datastreams_pk': datastream.id,
+                              'Thing_pk': thing.id,
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1557,8 +1563,8 @@ class A_1_10(APITestCase):
         url = reverse('location-detail',
                       kwargs={'version': 'v1.0',
                               'Sensors_pk': sensor.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
+                              'Datastreams_pk': datastream.id,
+                              'Thing_pk': thing.id,
                               'pk': location.id
                               })
         response = self.client.get(url, format='json')
@@ -1567,8 +1573,8 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-list',
                       kwargs={'version': 'v1.0',
                               'Sensors_pk': sensor.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
+                              'Datastreams_pk': datastream.id,
+                              'Thing_pk': thing.id,
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1576,8 +1582,8 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-detail',
                       kwargs={'version': 'v1.0',
                               'Sensors_pk': sensor.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
+                              'Datastreams_pk': datastream.id,
+                              'Thing_pk': thing.id,
                               'pk': hlocat.id
                               })
         response = self.client.get(url, format='json')
@@ -1586,9 +1592,9 @@ class A_1_10(APITestCase):
         url = reverse('location-list',
                       kwargs={'version': 'v1.0',
                               'Sensors_pk': sensor.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
-                              'nested_4_pk': hlocat.id
+                              'Datastreams_pk': datastream.id,
+                              'Thing_pk': thing.id,
+                              'HistoricalLocations_pk': hlocat.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1596,9 +1602,9 @@ class A_1_10(APITestCase):
         url = reverse('location-detail',
                       kwargs={'version': 'v1.0',
                               'Sensors_pk': sensor.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
-                              'nested_4_pk': hlocat.id,
+                              'Datastreams_pk': datastream.id,
+                              'Thing_pk': thing.id,
+                              'HistoricalLocations_pk': hlocat.id,
                               'pk': location.id
                               })
         response = self.client.get(url, format='json')
@@ -1607,9 +1613,9 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-list',
                       kwargs={'version': 'v1.0',
                               'Sensors_pk': sensor.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
-                              'nested_4_pk': location.id
+                              'Datastreams_pk': datastream.id,
+                              'Thing_pk': thing.id,
+                              'Locations_pk': location.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1617,9 +1623,9 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-detail',
                       kwargs={'version': 'v1.0',
                               'Sensors_pk': sensor.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
-                              'nested_4_pk': location.id,
+                              'Datastreams_pk': datastream.id,
+                              'Thing_pk': thing.id,
+                              'Locations_pk': location.id,
                               'pk': hlocat.id
                               })
         response = self.client.get(url, format='json')
@@ -1643,7 +1649,7 @@ class A_1_10(APITestCase):
         url = reverse('thing-list',
                       kwargs={'version': 'v1.0',
                               'Sensors_pk': sensor.id,
-                              'nested_2_pk': datastream.id
+                              'Datastreams_pk': datastream.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1651,7 +1657,7 @@ class A_1_10(APITestCase):
         url = reverse('thing-detail',
                       kwargs={'version': 'v1.0',
                               'Sensors_pk': sensor.id,
-                              'nested_2_pk': datastream.id,
+                              'Datastreams_pk': datastream.id,
                               'pk': thing.id
                               })
         response = self.client.get(url, format='json')
@@ -1660,7 +1666,7 @@ class A_1_10(APITestCase):
         url = reverse('observedproperty-list',
                       kwargs={'version': 'v1.0',
                               'Sensors_pk': sensor.id,
-                              'nested_2_pk': datastream.id
+                              'Datastreams_pk': datastream.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1668,7 +1674,7 @@ class A_1_10(APITestCase):
         url = reverse('observedproperty-detail',
                       kwargs={'version': 'v1.0',
                               'Sensors_pk': sensor.id,
-                              'nested_2_pk': datastream.id,
+                              'Datastreams_pk': datastream.id,
                               'pk': oprop.id
                               })
         response = self.client.get(url, format='json')
@@ -1677,7 +1683,7 @@ class A_1_10(APITestCase):
         url = reverse('observation-list',
                       kwargs={'version': 'v1.0',
                               'Sensors_pk': sensor.id,
-                              'nested_2_pk': datastream.id
+                              'Datastreams_pk': datastream.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1685,7 +1691,7 @@ class A_1_10(APITestCase):
         url = reverse('observation-detail',
                       kwargs={'version': 'v1.0',
                               'Sensors_pk': sensor.id,
-                              'nested_2_pk': datastream.id,
+                              'Datastreams_pk': datastream.id,
                               'pk': obs[0].id
                               })
         response = self.client.get(url, format='json')
@@ -1694,8 +1700,8 @@ class A_1_10(APITestCase):
         url = reverse('featureofinterest-list',
                       kwargs={'version': 'v1.0',
                               'Sensors_pk': sensor.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': obs[0].id,
+                              'Datastreams_pk': datastream.id,
+                              'Observations_pk': obs[0].id,
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1703,8 +1709,8 @@ class A_1_10(APITestCase):
         url = reverse('featureofinterest-detail',
                       kwargs={'version': 'v1.0',
                               'Sensors_pk': sensor.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': obs[0].id,
+                              'Datastreams_pk': datastream.id,
+                              'Observations_pk': obs[0].id,
                               'pk': foi.id
                               })
         response = self.client.get(url, format='json')
@@ -1716,13 +1722,13 @@ class A_1_10(APITestCase):
         available and the appropriate response is returned.
         """
         oprop = ObservedProperty.objects.get(name='Temperature')
-        datastream = DataStream.objects.get(ObservedProperty__name=oprop.name)
+        datastream = Datastream.objects.get(ObservedProperty__name=oprop.name)
         thing = datastream.Thing
-        location = thing.Locations.get(name='Location 1')
+        location = thing.Location.get(name='Location 1')
         hlocat = HistoricalLocation.objects.get(Thing__name=thing.name)
-        sensor = Sensor.objects.get(Datastreams__name=datastream.name)
+        sensor = Sensor.objects.get(Datastream__name=datastream.name)
         obs = Observation.objects.filter(Datastream__name=datastream.name)
-        foi = FeatureOfInterest.objects.get(Observations__id=obs[0].id)
+        foi = FeatureOfInterest.objects.get(Observation__id=obs[0].id)
 
         url = reverse('observedproperty-list', kwargs={'version': 'v1.0'})
         response = self.client.get(url, format='json')
@@ -1738,8 +1744,8 @@ class A_1_10(APITestCase):
         url = reverse('location-list',
                       kwargs={'version': 'v1.0',
                               'ObservedProperties_pk': oprop.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
+                              'Datastreams_pk': datastream.id,
+                              'Thing_pk': thing.id,
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1747,8 +1753,8 @@ class A_1_10(APITestCase):
         url = reverse('location-detail',
                       kwargs={'version': 'v1.0',
                               'ObservedProperties_pk': oprop.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
+                              'Datastreams_pk': datastream.id,
+                              'Thing_pk': thing.id,
                               'pk': location.id
                               })
         response = self.client.get(url, format='json')
@@ -1757,8 +1763,8 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-list',
                       kwargs={'version': 'v1.0',
                               'ObservedProperties_pk': oprop.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
+                              'Datastreams_pk': datastream.id,
+                              'Thing_pk': thing.id,
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1766,8 +1772,8 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-detail',
                       kwargs={'version': 'v1.0',
                               'ObservedProperties_pk': oprop.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
+                              'Datastreams_pk': datastream.id,
+                              'Thing_pk': thing.id,
                               'pk': hlocat.id
                               })
         response = self.client.get(url, format='json')
@@ -1776,9 +1782,9 @@ class A_1_10(APITestCase):
         url = reverse('location-list',
                       kwargs={'version': 'v1.0',
                               'ObservedProperties_pk': oprop.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
-                              'nested_4_pk': hlocat.id
+                              'Datastreams_pk': datastream.id,
+                              'Thing_pk': thing.id,
+                              'HistoricalLocations_pk': hlocat.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1786,9 +1792,9 @@ class A_1_10(APITestCase):
         url = reverse('location-detail',
                       kwargs={'version': 'v1.0',
                               'ObservedProperties_pk': oprop.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
-                              'nested_4_pk': hlocat.id,
+                              'Datastreams_pk': datastream.id,
+                              'Thing_pk': thing.id,
+                              'HistoricalLocations_pk': hlocat.id,
                               'pk': location.id
                               })
         response = self.client.get(url, format='json')
@@ -1797,9 +1803,9 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-list',
                       kwargs={'version': 'v1.0',
                               'ObservedProperties_pk': oprop.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
-                              'nested_4_pk': location.id
+                              'Datastreams_pk': datastream.id,
+                              'Thing_pk': thing.id,
+                              'Locations_pk': location.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1807,9 +1813,9 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-detail',
                       kwargs={'version': 'v1.0',
                               'ObservedProperties_pk': oprop.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
-                              'nested_4_pk': location.id,
+                              'Datastreams_pk': datastream.id,
+                              'Thing_pk': thing.id,
+                              'Locations_pk': location.id,
                               'pk': hlocat.id
                               })
         response = self.client.get(url, format='json')
@@ -1833,7 +1839,7 @@ class A_1_10(APITestCase):
         url = reverse('thing-list',
                       kwargs={'version': 'v1.0',
                               'ObservedProperties_pk': oprop.id,
-                              'nested_2_pk': datastream.id
+                              'Datastreams_pk': datastream.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1841,7 +1847,7 @@ class A_1_10(APITestCase):
         url = reverse('thing-detail',
                       kwargs={'version': 'v1.0',
                               'ObservedProperties_pk': oprop.id,
-                              'nested_2_pk': datastream.id,
+                              'Datastreams_pk': datastream.id,
                               'pk': thing.id
                               })
         response = self.client.get(url, format='json')
@@ -1850,7 +1856,7 @@ class A_1_10(APITestCase):
         url = reverse('sensor-list',
                       kwargs={'version': 'v1.0',
                               'ObservedProperties_pk': oprop.id,
-                              'nested_2_pk': datastream.id
+                              'Datastreams_pk': datastream.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1858,7 +1864,7 @@ class A_1_10(APITestCase):
         url = reverse('sensor-detail',
                       kwargs={'version': 'v1.0',
                               'ObservedProperties_pk': oprop.id,
-                              'nested_2_pk': datastream.id,
+                              'Datastreams_pk': datastream.id,
                               'pk': sensor.id
                               })
         response = self.client.get(url, format='json')
@@ -1867,7 +1873,7 @@ class A_1_10(APITestCase):
         url = reverse('observation-list',
                       kwargs={'version': 'v1.0',
                               'ObservedProperties_pk': oprop.id,
-                              'nested_2_pk': datastream.id
+                              'Datastreams_pk': datastream.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1875,7 +1881,7 @@ class A_1_10(APITestCase):
         url = reverse('observation-detail',
                       kwargs={'version': 'v1.0',
                               'ObservedProperties_pk': oprop.id,
-                              'nested_2_pk': datastream.id,
+                              'Datastreams_pk': datastream.id,
                               'pk': obs[0].id
                               })
         response = self.client.get(url, format='json')
@@ -1884,8 +1890,8 @@ class A_1_10(APITestCase):
         url = reverse('featureofinterest-list',
                       kwargs={'version': 'v1.0',
                               'ObservedProperties_pk': oprop.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': obs[0].id,
+                              'Datastreams_pk': datastream.id,
+                              'Observations_pk': obs[0].id,
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1893,8 +1899,8 @@ class A_1_10(APITestCase):
         url = reverse('featureofinterest-detail',
                       kwargs={'version': 'v1.0',
                               'ObservedProperties_pk': oprop.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': obs[0].id,
+                              'Datastreams_pk': datastream.id,
+                              'Observations_pk': obs[0].id,
                               'pk': foi.id
                               })
         response = self.client.get(url, format='json')
@@ -1906,13 +1912,13 @@ class A_1_10(APITestCase):
         available and the appropriate response is returned.
         """
         obs = Observation.objects.last()
-        datastream = DataStream.objects.get(Observations__id=obs.id)
+        datastream = Datastream.objects.get(Observation__id=obs.id)
         thing = datastream.Thing
-        location = thing.Locations.get(name='Location 1')
+        location = thing.Location.get(name='Location 1')
         hlocat = HistoricalLocation.objects.get(Thing__name=thing.name)
-        sensor = Sensor.objects.get(Datastreams__name=datastream.name)
-        oprop = ObservedProperty.objects.get(Datastreams__name=datastream.name)
-        foi = FeatureOfInterest.objects.get(Observations__id=obs.id)
+        sensor = Sensor.objects.get(Datastream__name=datastream.name)
+        oprop = ObservedProperty.objects.get(Datastream__name=datastream.name)
+        foi = FeatureOfInterest.objects.get(Observation__id=obs.id)
 
         url = reverse('observation-list', kwargs={'version': 'v1.0'})
         response = self.client.get(url, format='json')
@@ -1928,8 +1934,8 @@ class A_1_10(APITestCase):
         url = reverse('location-list',
                       kwargs={'version': 'v1.0',
                               'Observations_pk': obs.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
+                              'Datastream_pk': datastream.id,
+                              'Thing_pk': thing.id,
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1937,8 +1943,8 @@ class A_1_10(APITestCase):
         url = reverse('location-detail',
                       kwargs={'version': 'v1.0',
                               'Observations_pk': obs.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
+                              'Datastream_pk': datastream.id,
+                              'Thing_pk': thing.id,
                               'pk': location.id
                               })
         response = self.client.get(url, format='json')
@@ -1947,8 +1953,8 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-list',
                       kwargs={'version': 'v1.0',
                               'Observations_pk': obs.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
+                              'Datastream_pk': datastream.id,
+                              'Thing_pk': thing.id,
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1956,8 +1962,8 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-detail',
                       kwargs={'version': 'v1.0',
                               'Observations_pk': obs.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
+                              'Datastream_pk': datastream.id,
+                              'Thing_pk': thing.id,
                               'pk': hlocat.id
                               })
         response = self.client.get(url, format='json')
@@ -1966,9 +1972,9 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-list',
                       kwargs={'version': 'v1.0',
                               'Observations_pk': obs.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
-                              'nested_4_pk': location.id
+                              'Datastream_pk': datastream.id,
+                              'Thing_pk': thing.id,
+                              'Locations_pk': location.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1976,9 +1982,9 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-detail',
                       kwargs={'version': 'v1.0',
                               'Observations_pk': obs.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
-                              'nested_4_pk': location.id,
+                              'Datastream_pk': datastream.id,
+                              'Thing_pk': thing.id,
+                              'Locations_pk': location.id,
                               'pk': hlocat.id
                               })
         response = self.client.get(url, format='json')
@@ -1987,9 +1993,9 @@ class A_1_10(APITestCase):
         url = reverse('location-list',
                       kwargs={'version': 'v1.0',
                               'Observations_pk': obs.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
-                              'nested_4_pk': hlocat.id
+                              'Datastream_pk': datastream.id,
+                              'Thing_pk': thing.id,
+                              'HistoricalLocations_pk': hlocat.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1997,9 +2003,9 @@ class A_1_10(APITestCase):
         url = reverse('location-detail',
                       kwargs={'version': 'v1.0',
                               'Observations_pk': obs.id,
-                              'nested_2_pk': datastream.id,
-                              'nested_3_pk': thing.id,
-                              'nested_4_pk': hlocat.id,
+                              'Datastream_pk': datastream.id,
+                              'Thing_pk': thing.id,
+                              'HistoricalLocations_pk': hlocat.id,
                               'pk': location.id
                               })
         response = self.client.get(url, format='json')
@@ -2023,7 +2029,7 @@ class A_1_10(APITestCase):
         url = reverse('thing-list',
                       kwargs={'version': 'v1.0',
                               'Observations_pk': obs.id,
-                              'nested_2_pk': datastream.id
+                              'Datastream_pk': datastream.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -2031,7 +2037,7 @@ class A_1_10(APITestCase):
         url = reverse('thing-detail',
                       kwargs={'version': 'v1.0',
                               'Observations_pk': obs.id,
-                              'nested_2_pk': datastream.id,
+                              'Datastream_pk': datastream.id,
                               'pk': thing.id
                               })
         response = self.client.get(url, format='json')
@@ -2040,7 +2046,7 @@ class A_1_10(APITestCase):
         url = reverse('sensor-list',
                       kwargs={'version': 'v1.0',
                               'Observations_pk': obs.id,
-                              'nested_2_pk': datastream.id
+                              'Datastream_pk': datastream.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -2048,7 +2054,7 @@ class A_1_10(APITestCase):
         url = reverse('sensor-detail',
                       kwargs={'version': 'v1.0',
                               'Observations_pk': obs.id,
-                              'nested_2_pk': datastream.id,
+                              'Datastream_pk': datastream.id,
                               'pk': sensor.id
                               })
         response = self.client.get(url, format='json')
@@ -2057,7 +2063,7 @@ class A_1_10(APITestCase):
         url = reverse('observedproperty-list',
                       kwargs={'version': 'v1.0',
                               'Observations_pk': obs.id,
-                              'nested_2_pk': datastream.id
+                              'Datastream_pk': datastream.id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -2065,7 +2071,7 @@ class A_1_10(APITestCase):
         url = reverse('observedproperty-detail',
                       kwargs={'version': 'v1.0',
                               'Observations_pk': obs.id,
-                              'nested_2_pk': datastream.id,
+                              'Datastream_pk': datastream.id,
                               'pk': oprop.id
                               })
         response = self.client.get(url, format='json')
@@ -2093,12 +2099,12 @@ class A_1_10(APITestCase):
         """
         foi = FeatureOfInterest.objects.get(name="Usidore")
         obs = Observation.objects.filter(FeatureOfInterest__name=foi.name)
-        datastream = DataStream.objects.filter(Observations__id=obs[0].id)
-        sensor = Sensor.objects.filter(Datastreams__name=datastream[0].name)
-        oprop = ObservedProperty.objects.filter(Datastreams__name=datastream[0].name)
-        thing = Thing.objects.filter(Datastreams__name=datastream[0].name)
-        location = Location.objects.filter(Things__name=thing[0].name)
-        hlocat = HistoricalLocation.objects.filter(Locations__name=location[0].name)
+        datastream = Datastream.objects.filter(Observation__id=obs[0].id)
+        sensor = Sensor.objects.filter(Datastream__name=datastream[0].name)
+        oprop = ObservedProperty.objects.filter(Datastream__name=datastream[0].name)
+        thing = Thing.objects.filter(Datastream__name=datastream[0].name)
+        location = Location.objects.filter(Thing__name=thing[0].name)
+        hlocat = HistoricalLocation.objects.filter(Location__name=location[0].name)
 
         url = reverse('featureofinterest-list', kwargs={'version': 'v1.0'})
         response = self.client.get(url, format='json')
@@ -2129,7 +2135,7 @@ class A_1_10(APITestCase):
         url = reverse('datastream-list',
                       kwargs={'version': 'v1.0',
                               'FeaturesOfInterest_pk': foi.id,
-                              'nested_2_pk': obs[0].id
+                              'Observations_pk': obs[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -2137,7 +2143,7 @@ class A_1_10(APITestCase):
         url = reverse('datastream-detail',
                       kwargs={'version': 'v1.0',
                               'FeaturesOfInterest_pk': foi.id,
-                              'nested_2_pk': obs[0].id,
+                              'Observations_pk': obs[0].id,
                               'pk': datastream[0].id
                               })
         response = self.client.get(url, format='json')
@@ -2146,8 +2152,8 @@ class A_1_10(APITestCase):
         url = reverse('observedproperty-list',
                       kwargs={'version': 'v1.0',
                               'FeaturesOfInterest_pk': foi.id,
-                              'nested_2_pk': obs[0].id,
-                              'nested_3_pk': datastream[0].id
+                              'Observations_pk': obs[0].id,
+                              'Datastream_pk': datastream[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -2155,8 +2161,8 @@ class A_1_10(APITestCase):
         url = reverse('observedproperty-detail',
                       kwargs={'version': 'v1.0',
                               'FeaturesOfInterest_pk': foi.id,
-                              'nested_2_pk': obs[0].id,
-                              'nested_3_pk': datastream[0].id,
+                              'Observations_pk': obs[0].id,
+                              'Datastream_pk': datastream[0].id,
                               'pk': oprop[0].id
                               })
         response = self.client.get(url, format='json')
@@ -2165,8 +2171,8 @@ class A_1_10(APITestCase):
         url = reverse('sensor-list',
                       kwargs={'version': 'v1.0',
                               'FeaturesOfInterest_pk': foi.id,
-                              'nested_2_pk': obs[0].id,
-                              'nested_3_pk': datastream[0].id
+                              'Observations_pk': obs[0].id,
+                              'Datastream_pk': datastream[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -2174,8 +2180,8 @@ class A_1_10(APITestCase):
         url = reverse('sensor-detail',
                       kwargs={'version': 'v1.0',
                               'FeaturesOfInterest_pk': foi.id,
-                              'nested_2_pk': obs[0].id,
-                              'nested_3_pk': datastream[0].id,
+                              'Observations_pk': obs[0].id,
+                              'Datastream_pk': datastream[0].id,
                               'pk': sensor[0].id
                               })
         response = self.client.get(url, format='json')
@@ -2184,8 +2190,8 @@ class A_1_10(APITestCase):
         url = reverse('thing-list',
                       kwargs={'version': 'v1.0',
                               'FeaturesOfInterest_pk': foi.id,
-                              'nested_2_pk': obs[0].id,
-                              'nested_3_pk': datastream[0].id
+                              'Observations_pk': obs[0].id,
+                              'Datastream_pk': datastream[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -2193,8 +2199,8 @@ class A_1_10(APITestCase):
         url = reverse('thing-detail',
                       kwargs={'version': 'v1.0',
                               'FeaturesOfInterest_pk': foi.id,
-                              'nested_2_pk': obs[0].id,
-                              'nested_3_pk': datastream[0].id,
+                              'Observations_pk': obs[0].id,
+                              'Datastream_pk': datastream[0].id,
                               'pk': thing[0].id
                               })
         response = self.client.get(url, format='json')
@@ -2203,9 +2209,9 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-list',
                       kwargs={'version': 'v1.0',
                               'FeaturesOfInterest_pk': foi.id,
-                              'nested_2_pk': obs[0].id,
-                              'nested_3_pk': datastream[0].id,
-                              'nested_4_pk': thing[0].id
+                              'Observations_pk': obs[0].id,
+                              'Datastream_pk': datastream[0].id,
+                              'Thing_pk': thing[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -2213,9 +2219,9 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-detail',
                       kwargs={'version': 'v1.0',
                               'FeaturesOfInterest_pk': foi.id,
-                              'nested_2_pk': obs[0].id,
-                              'nested_3_pk': datastream[0].id,
-                              'nested_4_pk': thing[0].id,
+                              'Observations_pk': obs[0].id,
+                              'Datastream_pk': datastream[0].id,
+                              'Thing_pk': thing[0].id,
                               'pk': hlocat[0].id
                               })
         response = self.client.get(url, format='json')
@@ -2224,9 +2230,9 @@ class A_1_10(APITestCase):
         url = reverse('location-list',
                       kwargs={'version': 'v1.0',
                               'FeaturesOfInterest_pk': foi.id,
-                              'nested_2_pk': obs[0].id,
-                              'nested_3_pk': datastream[0].id,
-                              'nested_4_pk': thing[0].id,
+                              'Observations_pk': obs[0].id,
+                              'Datastream_pk': datastream[0].id,
+                              'Thing_pk': thing[0].id,
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -2234,9 +2240,9 @@ class A_1_10(APITestCase):
         url = reverse('location-detail',
                       kwargs={'version': 'v1.0',
                               'FeaturesOfInterest_pk': foi.id,
-                              'nested_2_pk': obs[0].id,
-                              'nested_3_pk': datastream[0].id,
-                              'nested_4_pk': thing[0].id,
+                              'Observations_pk': obs[0].id,
+                              'Datastream_pk': datastream[0].id,
+                              'Thing_pk': thing[0].id,
                               'pk': location[0].id
                               })
         response = self.client.get(url, format='json')
@@ -2245,10 +2251,10 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-list',
                       kwargs={'version': 'v1.0',
                               'FeaturesOfInterest_pk': foi.id,
-                              'nested_2_pk': obs[0].id,
-                              'nested_3_pk': datastream[0].id,
-                              'nested_4_pk': thing[0].id,
-                              'nested_5_pk': location[0].id
+                              'Observations_pk': obs[0].id,
+                              'Datastream_pk': datastream[0].id,
+                              'Thing_pk': thing[0].id,
+                              'Locations_pk': location[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -2256,10 +2262,10 @@ class A_1_10(APITestCase):
         url = reverse('historicallocation-detail',
                       kwargs={'version': 'v1.0',
                               'FeaturesOfInterest_pk': foi.id,
-                              'nested_2_pk': obs[0].id,
-                              'nested_3_pk': datastream[0].id,
-                              'nested_4_pk': thing[0].id,
-                              'nested_5_pk': location[0].id,
+                              'Observations_pk': obs[0].id,
+                              'Datastream_pk': datastream[0].id,
+                              'Thing_pk': thing[0].id,
+                              'Locations_pk': location[0].id,
                               'pk': hlocat[0].id
                               })
         response = self.client.get(url, format='json')
@@ -2268,10 +2274,10 @@ class A_1_10(APITestCase):
         url = reverse('location-list',
                       kwargs={'version': 'v1.0',
                               'FeaturesOfInterest_pk': foi.id,
-                              'nested_2_pk': obs[0].id,
-                              'nested_3_pk': datastream[0].id,
-                              'nested_4_pk': thing[0].id,
-                              'nested_5_pk': hlocat[0].id
+                              'Observations_pk': obs[0].id,
+                              'Datastream_pk': datastream[0].id,
+                              'Thing_pk': thing[0].id,
+                              'HistoricalLocations_pk': hlocat[0].id
                               })
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -2279,10 +2285,10 @@ class A_1_10(APITestCase):
         url = reverse('location-detail',
                       kwargs={'version': 'v1.0',
                               'FeaturesOfInterest_pk': foi.id,
-                              'nested_2_pk': obs[0].id,
-                              'nested_3_pk': datastream[0].id,
-                              'nested_4_pk': thing[0].id,
-                              'nested_5_pk': hlocat[0].id,
+                              'Observations_pk': obs[0].id,
+                              'Datastream_pk': datastream[0].id,
+                              'Thing_pk': thing[0].id,
+                              'HistoricalLocations_pk': hlocat[0].id,
                               'pk': location[0].id
                               })
         response = self.client.get(url, format='json')
@@ -2346,7 +2352,7 @@ class A_1_10(APITestCase):
         Ensure that all nested paths for the things entity are available and
         the appropriate response is returned.
         """
-        hlocat = HistoricalLocation.objects.get(Locations__name='Location 1')
+        hlocat = HistoricalLocation.objects.get(Location__name='Location 1')
         properties = [
             'time'
         ]
@@ -2370,7 +2376,7 @@ class A_1_10(APITestCase):
         Ensure that all nested paths for the things entity are available and
         the appropriate response is returned.
         """
-        datastream = DataStream.objects.get(name='Chunt')
+        datastream = Datastream.objects.get(name='Chunt')
         properties = [
             'name',
             'description',
@@ -2466,6 +2472,7 @@ class A_1_10(APITestCase):
                           kwargs={'version': 'v1.0',
                                   'pk': observation.id
                                   })
+
         for property in properties:
             url = baseurl + '/' + property
             response = self.client.get(url, format='json')
@@ -2518,7 +2525,7 @@ class A_1_10(APITestCase):
         for ref in response.data['value']:
             self.assertIn('@iot.selfLink', ref)
 
-        DataStream.objects.create(
+        Datastream.objects.create(
             name='Arnie',
             description='Kneecamp',
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
@@ -2531,12 +2538,12 @@ class A_1_10(APITestCase):
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:08:00.000Z",
             result=21,
-            Datastream=DataStream.objects.get(name="Arnie"),
+            Datastream=Datastream.objects.get(name="Arnie"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:08:00.000Z",
             )
 
-        datastream = DataStream.objects.get(name='Arnie')
+        datastream = Datastream.objects.get(name='Arnie')
         baseurl = reverse('datastream-detail',
                           kwargs={'version': 'v1.0',
                                   'pk': datastream.id

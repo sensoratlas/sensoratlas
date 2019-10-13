@@ -64,7 +64,7 @@ REST_FRAMEWORK = {
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
     'URL_FIELD_NAME': 'selfLink',
     'ORDERING_PARAM': '$orderby',
-    'DEFAULT_PAGINATION_CLASS': 'sensorAtlas.query_options.SensorThingsPagination',
+    'DEFAULT_PAGINATION_CLASS': 'sensorAtlas.pagination.SensorThingsPagination',
     'PAGE_SIZE': 100,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json'
 }

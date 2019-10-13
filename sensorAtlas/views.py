@@ -1,9 +1,10 @@
-from .models import Location, Thing, DataStream, Sensor, \
+from .models import Location, Thing, Datastream, Sensor, \
     ObservedProperty, Observation, FeatureOfInterest, HistoricalLocation
 import sensorAtlas.serializer as serializers
-from .query_options import Filter, Orderby
-from .viewsets import ViewSet, PropertyPath
+from .parsers import Filter, Orderby
+from .viewsets import ViewSet
 from rest_framework import generics
+
 
 class APIRoot(generics.GenericAPIView):
     """
@@ -11,7 +12,7 @@ class APIRoot(generics.GenericAPIView):
     """
 
 
-class ThingView(Filter, PropertyPath.Thing, ViewSet):
+class ThingView(Filter, ViewSet):
     """Provides a view set of the Things entity."""
     queryset = Thing.objects.all()
     serializer_class = serializers.ThingSerializer
@@ -19,7 +20,7 @@ class ThingView(Filter, PropertyPath.Thing, ViewSet):
     ordering_fields = '__all__'
 
 
-class LocationView(Filter, PropertyPath.Location, ViewSet):
+class LocationView(Filter, ViewSet):
     """Provides a view set for the Locations entity."""
     queryset = Location.objects.all()
     serializer_class = serializers.LocationSerializer
@@ -27,7 +28,7 @@ class LocationView(Filter, PropertyPath.Location, ViewSet):
     ordering_fields = '__all__'
 
 
-class HistoricalLocationView(Filter, PropertyPath.HistoricalLocation, ViewSet):
+class HistoricalLocationView(Filter, ViewSet):
     """Provides a view set for Historical Location entities."""
     queryset = HistoricalLocation.objects.all()
     serializer_class = serializers.HistoricalLocationSerializer
@@ -35,15 +36,15 @@ class HistoricalLocationView(Filter, PropertyPath.HistoricalLocation, ViewSet):
     ordering_fields = '__all__'
 
 
-class DataStreamView(Filter, PropertyPath.Datastream, ViewSet):
+class DatastreamView(Filter, ViewSet):
     """Provides a view set for the Datastreams entity"""
-    queryset = DataStream.objects.all()
-    serializer_class = serializers.DataStreamSerializer
+    queryset = Datastream.objects.all()
+    serializer_class = serializers.DatastreamSerializer
     filter_backends = (Orderby,)
     ordering_fields = '__all__'
 
 
-class SensorView(Filter, PropertyPath.Sensor, ViewSet):
+class SensorView(Filter, ViewSet):
     """Provides a view set for the Sensors entity"""
     queryset = Sensor.objects.all()
     serializer_class = serializers.SensorSerializer
@@ -51,7 +52,7 @@ class SensorView(Filter, PropertyPath.Sensor, ViewSet):
     ordering_fields = '__all__'
 
 
-class ObservedPropertyView(Filter, PropertyPath.ObservedProperty, ViewSet):
+class ObservedPropertyView(Filter, ViewSet):
     """Provides a view set for the Observed Properties entity"""
     queryset = ObservedProperty.objects.all()
     serializer_class = serializers.ObservedPropertySerializer
@@ -59,7 +60,7 @@ class ObservedPropertyView(Filter, PropertyPath.ObservedProperty, ViewSet):
     ordering_fields = '__all__'
 
 
-class ObservationView(PropertyPath.Observation, Filter, ViewSet):
+class ObservationView(Filter, ViewSet):
     """Provides a view set for the Observations entity"""
     queryset = Observation.objects.all()
     serializer_class = serializers.ObservationSerializer
@@ -67,7 +68,7 @@ class ObservationView(PropertyPath.Observation, Filter, ViewSet):
     ordering_fields = '__all__'
 
 
-class FeatureOfInterestView(Filter, PropertyPath.FeatureOfInterest, ViewSet):
+class FeatureOfInterestView(Filter, ViewSet):
     """Provides a view set of the Features of Interest entity."""
     queryset = FeatureOfInterest.objects.all()
     serializer_class = serializers.FeatureOfInterestSerializer
