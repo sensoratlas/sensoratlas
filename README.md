@@ -1,12 +1,10 @@
-# sensoraAtlas
+# SensorAtlas
 
-sensorAtlas is an OGC SensorThings API implementation in Python.
+SensorAtlas is an OGC SensorThings API implementation in Python.
 
 Detailed documentation is in the "docs" directory.
 
 ## Quick start
-
-
 
 1. Install `sensorAtlas` (e.g. `pip install <path-to-file>/sensorAtlas-0.1.tar.gz`)
 
@@ -42,7 +40,6 @@ path('api/', include('sensoratlas.urls')),
 
 6. Start the development server and visit http://127.0.0.1:8000/api/v1.0/
 
-
-## tests
+## Tests
 
 `python setup.py test`
