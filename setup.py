@@ -1,5 +1,5 @@
 import os
-from setuptools import find_packages, setup
+from setuptools import setup
 
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
     README = readme.read()
@@ -8,16 +8,16 @@ with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
-    name='sensorAtlas',
-    version='0.1',
-    packages=['sensorAtlas'],
+    name='sensoratlas',
+    version='0.0.1',
+    packages=['sensoratlas'],
     include_package_data=True,
-    license='MIT License',
-    description='An OGC SensorThings API implementation in Python.',
+    license='BSD-3-Clause',
+    description='A Django app to serve sensor data with sensorthings API.',
     long_description=README,
-    url='https://www.example.com/',
+    url='https://github.com/sensoratlas/sensoratlas',
     author='Joseph Percival',
-    author_email='ipercival@gmail.com',
+    author_email='iosefa@georepublic.de',
     test_suite="runtests.runtests",
     python_requires=">=3.6",
     install_requires=[

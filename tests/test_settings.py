@@ -14,7 +14,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'sensorAtlas',
+    'sensoratlas',
     'rest_framework',
 ]
 
@@ -49,7 +49,7 @@ TEMPLATES = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'sensorAtlas-demo',
+        'NAME': 'sensoratlas-demo',
         'USER': 'postgres',
         'HOST': os.getenv('DBHOST', 'localhost'),
         'PORT': '5432',
@@ -64,7 +64,7 @@ REST_FRAMEWORK = {
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
     'URL_FIELD_NAME': 'selfLink',
     'ORDERING_PARAM': '$orderby',
-    'DEFAULT_PAGINATION_CLASS': 'sensorAtlas.pagination.SensorThingsPagination',
+    'DEFAULT_PAGINATION_CLASS': 'sensoratlas.pagination.SensorThingsPagination',
     'PAGE_SIZE': 100,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json'
 }
