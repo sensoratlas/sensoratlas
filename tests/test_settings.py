@@ -49,7 +49,7 @@ TEMPLATES = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'sensoratlas-demo',
+        'NAME': '__sensoratlas__',
         'USER': 'postgres',
         'HOST': os.getenv('DBHOST', 'localhost'),
         'PORT': '5432',
