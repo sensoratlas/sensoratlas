@@ -252,8 +252,6 @@ class Expand(ExpanderSerializerMixin):
                 kwargs = kwargs.copy()
                 kwargs.setdefault('context', self.context)
 
-                print("context", context)
-
                 if issubclass(serializer_class, Expand):
                     serializer = serializer_class(
                         expanded_fields=qs_from_dict(nested_expand),
@@ -265,9 +263,6 @@ class Expand(ExpanderSerializerMixin):
                         *args,
                         **kwargs
                     )
-
-                print(serializer)
-                print(serializer.__dict__)
 
                 self.fields[expanded_field] = serializer
                 Conflicts.conflicts = []
@@ -286,7 +281,6 @@ class Select(serializers.ModelSerializer):
             select = select.split(',')
             allowed = set(select)
             existing = set(self.fields.keys())
-            print("existing", existing)
             for selected in existing - allowed:
                 # not self.fields --> this does all fields. It shuold be the fields in the unnested serializer
                 self.fields.pop(selected)

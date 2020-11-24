@@ -359,7 +359,7 @@ class Filter:
 
         elif queryexpand:
             # Datastream.objects.filter(id=1)
-            print(qs)
+            pass
         return qs
 
 
