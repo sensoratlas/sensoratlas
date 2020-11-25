@@ -357,9 +357,8 @@ class Filter:
             except Exception as e:
                 raise BadRequest("Malformed request: " + str(e))
 
-        elif queryexpand:
-            # Datastream.objects.filter(id=1)
-            pass
+        if queryexpand:
+            raise NotImplemented501()
         return qs
 
 

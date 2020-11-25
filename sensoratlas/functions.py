@@ -1,53 +1,51 @@
 import operator
+from abc import ABC
 
 from django.db.models import Q, Lookup, Func, CharField, TextField, F, Value
 from django.db.models.fields import FloatField, IntegerField, Field
 from django.db.models.functions import Length, Lower, Upper
 
 
-class CustomFunctions:
-    """
-    blah
-    """
-    class FractionalSecond(Func):
-        output_field = FloatField()
-        template = "EXTRACT(SECOND FROM %(expressions)s)::decimal % 1"
+class FractionalSecond(Func, ABC):
+    output_field = FloatField()
+    template = "EXTRACT(SECOND FROM %(expressions)s)::decimal % 1"
 
 
-    class ExtractMinutes(Func):
-        output_field = IntegerField()
-        template = "EXTRACT('timezone_minute' FROM %(expressions)s)"
+class ExtractMinutes(Func, ABC):
+    output_field = IntegerField()
+    template = "EXTRACT('timezone_minute' FROM %(expressions)s)"
 
 
-    class Round(Func):
-        function = 'ROUND'
-        template = "%(function)s(NULLIF(REGEXP_REPLACE((%(expressions)s::json->'result')::text, '^(?![0-9.]*$).+$', '', 'g'), '')::numeric)"
+class Round(Func, ABC):
+    function = 'ROUND'
+    template = "%(function)s(NULLIF(REGEXP_REPLACE((%(expressions)s::json->'result')::text, '^(?![0-9.]*$).+$', '', 'g'), '')::numeric)"
 
 
-    class Floor(Func):
-        function = 'FLOOR'
-        template = "%(function)s(NULLIF(REGEXP_REPLACE((%(expressions)s::json->'result')::text, '^(?![0-9.]*$).+$', '', 'g'), '')::numeric)"
+class Floor(Func, ABC):
+    function = 'FLOOR'
+    template = "%(function)s(NULLIF(REGEXP_REPLACE((%(expressions)s::json->'result')::text, '^(?![0-9.]*$).+$', '', 'g'), '')::numeric)"
 
 
-    class Ceiling(Func):
-        function = 'CEILING'
-        template = "%(function)s(NULLIF(REGEXP_REPLACE((%(expressions)s::json->'result')::text, '^(?![0-9.]*$).+$', '', 'g'), '')::numeric)"
+class Ceiling(Func, ABC):
+    function = 'CEILING'
+    template = "%(function)s(NULLIF(REGEXP_REPLACE((%(expressions)s::json->'result')::text, '^(?![0-9.]*$).+$', '', 'g'), '')::numeric)"
 
 
-    class ST_Distance(Func):
-        function = 'ST_Distance'
-        output_field = FloatField()
-        template = '%(function)s(%(expressions)s)'
+class ST_Distance(Func, ABC):
+    function = 'ST_Distance'
+    output_field = FloatField()
+    template = '%(function)s(%(expressions)s)'
 
 
-    class ST_Length(Func):
-        function = 'ST_Length'
-        output_field = FloatField()
-        template = '%(function)s(%(expressions)s)'
+class ST_Length(Func, ABC):
+    function = 'ST_Length'
+    output_field = FloatField()
+    template = '%(function)s(%(expressions)s)'
 
 
-    class NullIf(Func):
-        template = "NULLIF(REGEXP_REPLACE((%(expressions)s::json->'result')::text, '^(?![0-9.]*$).+$', '', 'g'), '')::numeric"
+class NullIf(Func, ABC):
+    template = "NULLIF(REGEXP_REPLACE((%(expressions)s::json->'result')::text, '^(?![0-9.]*$).+$', '', 'g'), " \
+               "'')::numeric "
 
 
 class QueryFunctions:
@@ -61,7 +59,6 @@ class QueryFunctions:
     TextField.register_lookup(Length)
     TextField.register_lookup(Lower)
     TextField.register_lookup(Upper)
-
 
     def substringof(parameterstring, **kwargs):
         """
@@ -221,7 +218,7 @@ class QueryFunctions:
 
     def millisecond(parameterstring, **kwargs):
         d = dict()
-        django_function = CustomFunctions.FractionalSecond
+        django_function = FractionalSecond
         field = parameterstring
         temporary_field = "temp" + str(kwargs['index'])
         d['query_field'] = temporary_field
@@ -230,7 +227,7 @@ class QueryFunctions:
 
     def offsetminutes(parameterstring, **kwargs):
         d = dict()
-        django_function = CustomFunctions.ExtractMinutes
+        django_function = ExtractMinutes
         field = parameterstring
         temporary_field = "temp" + str(kwargs['index'])
         d['query_field'] = temporary_field
@@ -258,7 +255,7 @@ class QueryFunctions:
 
     def round(parameterstring, **kwargs):
         d = dict()
-        django_function = CustomFunctions.Round
+        django_function = Round
         field = parameterstring
         temporary_field = "temp" + str(kwargs['index'])
         d['query_field'] = temporary_field
@@ -267,7 +264,7 @@ class QueryFunctions:
 
     def floor(parameterstring, **kwargs):
         d = dict()
-        django_function = CustomFunctions.Floor
+        django_function = Floor
         field = parameterstring
         temporary_field = "temp" + str(kwargs['index'])
         d['query_field'] = temporary_field
@@ -276,7 +273,7 @@ class QueryFunctions:
 
     def ceiling(parameterstring, **kwargs):
         d = dict()
-        django_function = CustomFunctions.Ceiling
+        django_function = Ceiling
         field = parameterstring
         temporary_field = "temp" + str(kwargs['index'])
         d['query_field'] = temporary_field
@@ -285,7 +282,7 @@ class QueryFunctions:
 
     def geo_distance(parameterstring, **kwargs):
         d = dict()
-        django_function = CustomFunctions.ST_Distance
+        django_function = ST_Distance
         parsedlist = parameterstring.split(',')
         # this is not very good ... easy to break
         point_index = [i for i, s in enumerate(parsedlist) if "POINT" in s]
@@ -306,7 +303,7 @@ class QueryFunctions:
 
     def geo_length(parameterstring, **kwargs):
         d = dict()
-        django_function = CustomFunctions.ST_Length
+        django_function = ST_Length
         field = parameterstring
         temporary_field = "temp" + str(kwargs['index'])
         d['query_field'] = temporary_field
@@ -444,6 +441,7 @@ class QueryOperations:
     """
     Built-in filter operatations of the Sensor Things API.
     """
+
     class NotEqual(Lookup):
         """
         Defines a "Not Equals" comparison operator.
@@ -455,6 +453,7 @@ class QueryOperations:
             rhs, rhs_params = self.process_rhs(compiler, connection)
             params = lhs_params + rhs_params
             return '%s <> %s' % (lhs, rhs), params
+
     Field.register_lookup(NotEqual)
 
     comparison_operators = {
@@ -482,7 +481,7 @@ class QueryOperations:
                 field = arguments[0]
             if field == 'result':
                 field = 'result__result'
-                value = operator.add(CustomFunctions.NullIf(field), num)
+                value = operator.add(NullIf(field), num)
             else:
                 value = operator.add(F(field), num)
             temporary_field = "temp" + str(kwargs['index'])
@@ -506,7 +505,7 @@ class QueryOperations:
                 field = arguments[0]
             if field == 'result':
                 field = 'result__result'
-                value = operator.sub(CustomFunctions.NullIf(field), num)
+                value = operator.sub(NullIf(field), num)
             else:
                 value = operator.sub(F(field), num)
             temporary_field = "temp" + str(kwargs['index'])
@@ -530,7 +529,7 @@ class QueryOperations:
                 field = arguments[0]
             if field == 'result':
                 field = 'result__result'
-                value = operator.mul(CustomFunctions.NullIf(field), num)
+                value = operator.mul(NullIf(field), num)
             else:
                 value = operator.mul(F(field), num)
             temporary_field = "temp" + str(kwargs['index'])
@@ -554,7 +553,7 @@ class QueryOperations:
                 field = arguments[0]
             if field == 'result':
                 field = 'result__result'
-                value = operator.truediv(CustomFunctions.NullIf(field), num)
+                value = operator.truediv(NullIf(field), num)
             else:
                 value = operator.truediv(F(field), num)
             temporary_field = "temp" + str(kwargs['index'])
@@ -578,7 +577,7 @@ class QueryOperations:
                 field = arguments[0]
             if field == 'result':
                 field = 'result__result'
-                value = operator.mod(CustomFunctions.NullIf(field), num)
+                value = operator.mod(NullIf(field), num)
             else:
                 value = operator.mul(F(field), num)
             temporary_field = "temp" + str(kwargs['index'])
@@ -593,5 +592,3 @@ class QueryOperations:
         "div": odata_div,
         "mod": odata_mod
     }
-
-
