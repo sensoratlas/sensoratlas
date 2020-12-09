@@ -18,26 +18,29 @@ class ExtractMinutes(Func, ABC):
 
 class Round(Func, ABC):
     function = 'ROUND'
-    template = "%(function)s(NULLIF(REGEXP_REPLACE((%(expressions)s::json->'result')::text, '^(?![0-9.]*$).+$', '', 'g'), '')::numeric)"
+    template = "%(function)s(NULLIF(REGEXP_REPLACE((%(expressions)s::json->'result')::text, '^(?![0-9.]*$).+$', '', " \
+               "'g'), '')::numeric) "
 
 
 class Floor(Func, ABC):
     function = 'FLOOR'
-    template = "%(function)s(NULLIF(REGEXP_REPLACE((%(expressions)s::json->'result')::text, '^(?![0-9.]*$).+$', '', 'g'), '')::numeric)"
+    template = "%(function)s(NULLIF(REGEXP_REPLACE((%(expressions)s::json->'result')::text, '^(?![0-9.]*$).+$', '', " \
+               "'g'), '')::numeric) "
 
 
 class Ceiling(Func, ABC):
     function = 'CEILING'
-    template = "%(function)s(NULLIF(REGEXP_REPLACE((%(expressions)s::json->'result')::text, '^(?![0-9.]*$).+$', '', 'g'), '')::numeric)"
+    template = "%(function)s(NULLIF(REGEXP_REPLACE((%(expressions)s::json->'result')::text, '^(?![0-9.]*$).+$', '', " \
+               "'g'), '')::numeric) "
 
 
-class ST_Distance(Func, ABC):
+class STDistance(Func, ABC):
     function = 'ST_Distance'
     output_field = FloatField()
     template = '%(function)s(%(expressions)s)'
 
 
-class ST_Length(Func, ABC):
+class STLength(Func, ABC):
     function = 'ST_Length'
     output_field = FloatField()
     template = '%(function)s(%(expressions)s)'
@@ -46,6 +49,12 @@ class ST_Length(Func, ABC):
 class NullIf(Func, ABC):
     template = "NULLIF(REGEXP_REPLACE((%(expressions)s::json->'result')::text, '^(?![0-9.]*$).+$', '', 'g'), " \
                "'')::numeric "
+
+
+def remove_quotes(string):
+    if (string[0] == "'" or string[0] == '"') and (string[-1] == "'" or string[-1] == '"'):
+        return string[1:-1]
+    return string
 
 
 class QueryFunctions:
@@ -60,12 +69,12 @@ class QueryFunctions:
     TextField.register_lookup(Lower)
     TextField.register_lookup(Upper)
 
-    def substringof(parameterstring, **kwargs):
+    def substringof(self, **kwargs):
         """
         Returns the queryset based on a case-sensitive containment test.
         """
         django_function = '__contains'
-        parsedlist = parameterstring.split(',')
+        parsedlist = self.split(',')
         # need to do some validation: only accept two arguments!
         string_index = [i for i, s in enumerate(parsedlist) if s[0] == "'" and s[-1] == "'"]
         field_index = [i for i, s in enumerate(parsedlist) if s[0] != "'" or s[-1] != "'"]
@@ -76,41 +85,39 @@ class QueryFunctions:
         if field == 'result':
             field = 'result__result'
 
-        if string[0] == "'" and string[-1] == "'":
-            string = string[1:-1]
-        elif string[0] == '"' and string[-1] == '"':
-            string = string[1:-1]
-            # REALLY I SHOULD RAISE AN ERROR HERE
+        # todo: raise error instead of below
+        string = remove_quotes(string)
+
         d = dict()
         d["query"] = Q(**{field + django_function: string})
         return d
 
-    def endswith(parameterstring, **kwargs):
+    def endswith(self, **kwargs):
         """
         Returns the queryset for entries that are True for case-sensitive
         ends-with.
         """
         django_function = '__endswith'
-        parsedlist = parameterstring.split(',')
+        parsedlist = self.split(',')
         field = parsedlist[0]
         if field == 'result':
             field = 'result__result'
         string = parsedlist[1]
-        if string[0] == "'" and string[-1] == "'":
-            string = string[1:-1]
-        elif string[0] == '"' and string[-1] == '"':
-            string = string[1:-1]
+
+        # todo: raise error instead of below
+        string = remove_quotes(string)
+
         d = dict()
         d["query"] = Q(**{field + django_function: string})
         return d
 
-    def startswith(parameterstring, **kwargs):
+    def startswith(self, **kwargs):
         """
         Returns the queryset for entries that are True for case-sensitive
         starts-with.
         """
         django_function = '__startswith'
-        parsedlist = parameterstring.split(',')
+        parsedlist = self.split(',')
         field = parsedlist[0]
         if field == 'result':
             field = 'result__result'
@@ -123,167 +130,167 @@ class QueryFunctions:
         d["query"] = Q(**{field + django_function: string})
         return d
 
-    def length(parameterstring, **kwargs):
+    def length(self, **kwargs):
         """
         Wraps the query with the PostgreSQL Length function and
         registers as a transform.
         """
         django_function = '__length'
-        field = parameterstring
+        field = self
         if field == 'result':
             field = 'result__result'
         d = dict()
         d['query_field'] = field + django_function
         return d
 
-    def tolower(parameterstring, **kwargs):
+    def tolower(self, **kwargs):
         """
         Wraps the query with the PostgreSQL Lower function and
         registers as a transform.
         """
         django_function = '__lower'
-        field = parameterstring
+        field = self
         if field == 'result':
             field = 'result__result'
         d = dict()
         d['query_field'] = field + django_function
         return d
 
-    def toupper(parameterstring, **kwargs):
+    def toupper(self, **kwargs):
         """
         Wraps the query with the PostgreSQL Upper function and
         registers as a transform.
         """
         django_function = '__upper'
-        field = parameterstring
+        field = self
         if field == 'result':
             field = 'result__result'
         d = dict()
         d['query_field'] = field + django_function
         return d
 
-    def year(parameterstring, **kwargs):
+    def year(self, **kwargs):
         django_function = '__year'
-        field = parameterstring
+        field = self
         if field == 'result':
             field = 'result__result'
-        d = {}
+        d = dict()
         d['query_field'] = field + django_function
         return d
 
-    def month(parameterstring, **kwargs):
+    def month(self, **kwargs):
         django_function = '__month'
-        field = parameterstring
+        field = self
         if field == 'result':
             field = 'result__result'
         d = dict()
         d['query_field'] = field + django_function
         return d
 
-    def day(parameterstring, **kwargs):
+    def day(self, **kwargs):
         django_function = '__day'
-        field = parameterstring
+        field = self
         if field == 'result':
             field = 'result__result'
         d = dict()
         d['query_field'] = field + django_function
         return d
 
-    def hour(parameterstring, **kwargs):
+    def hour(self, **kwargs):
         django_function = '__hour'
-        field = parameterstring
+        field = self
         if field == 'result':
             field = 'result__result'
         d = dict()
         d['query_field'] = field + django_function
         return d
 
-    def minute(parameterstring, **kwargs):
+    def minute(self, **kwargs):
         django_function = '__minute'
-        field = parameterstring
+        field = self
         if field == 'result':
             field = 'result__result'
         d = dict()
         d['query_field'] = field + django_function
         return d
 
-    def second(parameterstring, **kwargs):
+    def second(self, **kwargs):
         django_function = '__second'
-        field = parameterstring
+        field = self
         if field == 'result':
             field = 'result__result'
         d = dict()
         d['query_field'] = field + django_function
         return d
 
-    def millisecond(parameterstring, **kwargs):
+    def millisecond(self, **kwargs):
         d = dict()
         django_function = FractionalSecond
-        field = parameterstring
+        field = self
         temporary_field = "temp" + str(kwargs['index'])
         d['query_field'] = temporary_field
         d['annotation'] = {temporary_field: django_function(field)}
         return d
 
-    def offsetminutes(parameterstring, **kwargs):
+    def offsetminutes(self, **kwargs):
         d = dict()
         django_function = ExtractMinutes
-        field = parameterstring
+        field = self
         temporary_field = "temp" + str(kwargs['index'])
         d['query_field'] = temporary_field
         d['annotation'] = {temporary_field: django_function(field)}
         return d
 
-    def date(parameterstring, **kwargs):
+    def date(self, **kwargs):
         django_function = '__date'
-        field = parameterstring
+        field = self
         if field == 'result':
             field = 'result__result'
         d = dict()
         d['query_field'] = field + django_function
         return d
 
-    def time(parameterstring, **kwargs):
+    def time(self, **kwargs):
         # TODO: this only looks up aware times in a query if the django settings timezone matches the query one.
         django_function = '__time'
-        field = parameterstring
+        field = self
         if field == 'result':
             field = 'result__result'
         d = dict()
         d['query_field'] = field + django_function
         return d
 
-    def round(parameterstring, **kwargs):
+    def round(self, **kwargs):
         d = dict()
         django_function = Round
-        field = parameterstring
+        field = self
         temporary_field = "temp" + str(kwargs['index'])
         d['query_field'] = temporary_field
         d['annotation'] = {temporary_field: django_function(field)}
         return d
 
-    def floor(parameterstring, **kwargs):
+    def floor(self, **kwargs):
         d = dict()
         django_function = Floor
-        field = parameterstring
+        field = self
         temporary_field = "temp" + str(kwargs['index'])
         d['query_field'] = temporary_field
         d['annotation'] = {temporary_field: django_function(field)}
         return d
 
-    def ceiling(parameterstring, **kwargs):
+    def ceiling(self, **kwargs):
         d = dict()
         django_function = Ceiling
-        field = parameterstring
+        field = self
         temporary_field = "temp" + str(kwargs['index'])
         d['query_field'] = temporary_field
         d['annotation'] = {temporary_field: django_function(field)}
         return d
 
-    def geo_distance(parameterstring, **kwargs):
+    def geo_distance(self, **kwargs):
         d = dict()
-        django_function = ST_Distance
-        parsedlist = parameterstring.split(',')
+        django_function = STDistance
+        parsedlist = self.split(',')
         # this is not very good ... easy to break
         point_index = [i for i, s in enumerate(parsedlist) if "POINT" in s]
         field_index = [i for i, s in enumerate(parsedlist) if s[0] != "'" or s[-1] != "'"]
@@ -301,29 +308,29 @@ class QueryFunctions:
         d['annotation'] = {temporary_field: django_function(field, Value(string))}
         return d
 
-    def geo_length(parameterstring, **kwargs):
+    def geo_length(self, **kwargs):
         d = dict()
-        django_function = ST_Length
-        field = parameterstring
+        django_function = STLength
+        field = self
         temporary_field = "temp" + str(kwargs['index'])
         d['query_field'] = temporary_field
         d['annotation'] = {temporary_field: django_function(field)}
         return d
 
-    def st_equals(parameterstring, **kwargs):
+    def st_equals(self, **kwargs):
         django_function = '__equals'
-        field = parameterstring.split(',')[0]
-        geometry = parameterstring.split("'")[1]
+        field = self.split(',')[0]
+        geometry = self.split("'")[1]
         if field == 'result':
             field = 'result__result'
         d = dict()
         d['query'] = Q(**{field + django_function: geometry})
         return d
 
-    def st_within(parameterstring, **kwargs):
+    def st_within(self, **kwargs):
         django_function = '__within'
-        field = parameterstring.split(',')[0]
-        geometry = parameterstring.split("'")[1]
+        field = self.split(',')[0]
+        geometry = self.split("'")[1]
         if field == 'result':
             field = 'result__result'
         d = dict()
@@ -442,7 +449,7 @@ class QueryOperations:
     Built-in filter operatations of the Sensor Things API.
     """
 
-    class NotEqual(Lookup):
+    class NotEqual(Lookup, ABC):
         """
         Defines a "Not Equals" comparison operator.
         """

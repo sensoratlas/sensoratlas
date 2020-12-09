@@ -5,7 +5,6 @@ from .errors import Conflicts, NotImplemented501
 from .parsers import CustomParser
 from rest_framework.reverse import reverse
 import json
-from .models import Datastream
 
 
 class ControlInformation:
@@ -289,6 +288,6 @@ class Select(serializers.ModelSerializer):
 class ResultFormat(object):
     def __init__(self, *args, **kwargs):
         super(ResultFormat, self).__init__(*args, **kwargs)
-        resultFormat = self.context['request'].query_params.get('$resultFormat')
-        if resultFormat:
+        result_format = self.context['request'].query_params.get('$resultFormat')
+        if result_format:
             raise NotImplemented501()

@@ -12,7 +12,6 @@ from django.utils import timezone
 from datetime import datetime
 from .functions import QueryFunctions, QueryOperations
 from .viewsets import MODEL_KEYS
-from .models import Datastream
 
 
 def lexer(string):  # TODO: refactor
@@ -39,14 +38,14 @@ def lexer(string):  # TODO: refactor
         if a != ' ' and leftbcounter == rightbcounter \
                 and qcounter == 0:
             parsedstring += a
-            if index+1 == len(string):
+            if index + 1 == len(string):
                 parsedlist.append(parsedstring)
                 parsedstring = ''
         elif leftbcounter != rightbcounter:
             parsedstring += a
         elif qcounter > 0:
             parsedstring += a
-            if index+1 == len(string):
+            if index + 1 == len(string):
                 parsedlist.append(parsedstring)
                 parsedstring = ''
         else:
@@ -119,7 +118,7 @@ def function_lexer(string):
         elif a == '(' and leftbcounter == 1:
             parsedlist.append(parsedstring)
             parsedstring = ''
-        elif a == ')' and i+1 == len(string):
+        elif a == ')' and i + 1 == len(string):
             parsedlist.append(parsedstring)
         else:
             parsedstring += a
@@ -138,7 +137,7 @@ def solve_arithmetic(expression):
         lhs = new_expression[ind - 1]
         rhs = new_expression[ind + 1]
         value = new_expression[ind] + "(" + lhs + "," + rhs + ")"
-        new_expression[ind-1:ind+2] = str(value),
+        new_expression[ind - 1:ind + 2] = str(value),
 
     return new_expression
 
@@ -151,7 +150,6 @@ def query_mapping(y, index):
     d = {}
     if any([i in QueryOperations.arithmetic_operators
             for i in y]):
-
         y = solve_arithmetic(y)
 
     if len(y) == 1:
@@ -167,41 +165,42 @@ def query_mapping(y, index):
         return func(parse_function[1], index=index)
 
     elif len(y) == 3:  # valid must be comparison
-        operandA = y[0].split("/")
-        operandA = [MODEL_KEYS[x] if x in MODEL_KEYS else x for x in operandA]
-        operandA = '__'.join(operandA)
+        operand_a = y[0].split("/")
+        operand_a = [MODEL_KEYS[x] if x in MODEL_KEYS else x for x in operand_a]
+        operand_a = '__'.join(operand_a)
         operator = QueryOperations.comparison_operators[y[1]]
-        operandB = y[2]
+        operand_b = y[2]
 
-        if function_lexer(operandA):
-            parse_function = function_lexer(operandA)
+        if function_lexer(operand_a):
+            parse_function = function_lexer(operand_a)
             if parse_function[0] in QueryOperations.arithmetic_operators:
                 func = QueryOperations.arithmetic_operators[parse_function[0]]
             else:
                 func = QueryFunctions.implemented[parse_function[0]]
-            strng = re.search('^(?![0-9.]*$).+$', operandB)
+            strng = re.search('^(?![0-9.]*$).+$', operand_b)
 
-            if (func == QueryFunctions.round or
+            if (
+                    func == QueryFunctions.round or
                     func == QueryFunctions.floor or
-                    func == QueryFunctions.ceiling) and strng:
+                    func == QueryFunctions.ceiling
+            ) and strng:
                 raise BadRequest
 
             funcres = func(parse_function[1], index=index, numbers=False)
 
             try:
-                operandA = funcres['query_field']
+                operand_a = funcres['query_field']
                 QueryObjects.TEMP_FIELD = funcres['annotation']
             except KeyError:
                 pass
-        if operandB[0] == "'" or operandB[0] == '"':
-            operandB = operandB[1:-1]
+        if operand_b[0] == "'" or operand_b[0] == '"':
+            operand_b = operand_b[1:-1]
 
-        if operandB == "now()":
+        if operand_b == "now()":
             now = timezone.now()
-            operandB = now
-            operandB = now.strftime("%Y-%m-%d %H:%M:%S.%f")
+            operand_b = now.strftime("%Y-%m-%d %H:%M:%S.%f")
 
-        if operandB == "maxdatetime()":
+        if operand_b == "maxdatetime()":
             maxdatetime = datetime(
                 year=9999,
                 month=12,
@@ -211,9 +210,9 @@ def query_mapping(y, index):
                 second=59,
                 tzinfo=timezone.utc
             )  # postgres error: date out of range if day = 31
-            operandB = maxdatetime.strftime("%Y-%m-%d %H:%M:%S.%f")
+            operand_b = maxdatetime.strftime("%Y-%m-%d %H:%M:%S.%f")
 
-        if operandB == "mindatetime()":
+        if operand_b == "mindatetime()":
             mindatetime = datetime(
                 year=1,
                 month=1,
@@ -223,29 +222,24 @@ def query_mapping(y, index):
                 second=0,
                 tzinfo=timezone.utc
             )  # postgres error: "date out of range" if day = 1
-            operandB = mindatetime.strftime("%Y-%m-%d %H:%M:%S.%f")
+            operand_b = mindatetime.strftime("%Y-%m-%d %H:%M:%S.%f")
 
-        if function_lexer(operandB):
-            parse_function = function_lexer(operandB)
+        if function_lexer(operand_b):
+            parse_function = function_lexer(operand_b)
             if parse_function[0] in QueryOperations.arithmetic_operators:
                 func = QueryOperations.arithmetic_operators[parse_function[0]]
-                operandB = func(parse_function[1], numbers=True)
-
+                operand_b = func(parse_function[1], numbers=True)
             else:
-                func = QueryFunctions.implemented[parse_function[0]]
-            # return func(parse_function[1], index=index)
                 raise NotImplemented501()
-
-
         try:
-            operandB = float(operandB)
+            operand_b = float(operand_b)
         except ValueError:
             pass
-        if operandA == 'result':
-            operandA = 'result__result'
-        if operandB == 'result':
-            operandB = 'result__result'
-        d['query'] = Q(**{operandA + operator: operandB})
+        if operand_a == 'result':
+            operand_a = 'result__result'
+        if operand_b == 'result':
+            operand_b = 'result__result'
+        d['query'] = Q(**{operand_a + operator: operand_b})
         return d
     else:
         raise ParseError()
@@ -291,6 +285,7 @@ class Orderby(filters.OrderingFilter):
     based on properties of requested entity in accending (asc) or
     decending (desc) order.
     """
+
     def get_ordering(self, request, queryset, view):
         params = request.query_params.get(self.ordering_param)
         if params:
@@ -303,14 +298,14 @@ class Orderby(filters.OrderingFilter):
                         field_query.remove("asc")
                     for i, field in enumerate(field_query):
                         if field == "desc":
-                            field_query[i-1] = "-" + field_query[i-1]
+                            field_query[i - 1] = "-" + field_query[i - 1]
                     while "desc" in field_query:
                         field_query.remove("desc")
                     fields.append(field_query[0])
                 else:
                     fields.append(
                         [param.strip() for param in params.split(',')]
-                        )
+                    )
             ordering = self.remove_invalid_fields(queryset,
                                                   fields,
                                                   view,
@@ -397,4 +392,3 @@ class CustomParser:
         for key, value in r:
             query_dict[key] = value
         return query_dict
-
