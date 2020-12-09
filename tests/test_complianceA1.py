@@ -8,12 +8,13 @@ from django.utils import timezone
 
 
 # A.1.1 Conformance class: SensorThings API Entity Control Information
-class A_1_1(APITestCase):
+class A11(APITestCase):
     """
     Check if each entity has the common control information as defined in
     the requirement http://www.opengis.net/spec/iot_sensing/1.0/req/entity-
     control-information/common-control-information.
     """
+
     def setUp(self):
         """
         Create test resources
@@ -103,11 +104,12 @@ class A_1_1(APITestCase):
             self.assertGreaterEqual(count, 1)
 
 
-class A_1_2(APITestCase):
+class A12(APITestCase):
     """
     Check if each Thing entity has the mandatory properties and
     mandatory relations as defined in this specification.
     """
+
     def setUp(self):
         """
         Create test resources.
@@ -116,7 +118,7 @@ class A_1_2(APITestCase):
             name='Thing 1',
             description='This is a thing',
             properties={}
-            )
+        )
 
     def test_thing_properties(self):
         """
@@ -128,8 +130,8 @@ class A_1_2(APITestCase):
             'description',
             'properties'
         ]
-        for property in properties:
-            self.assertTrue(hasattr(thing, property))
+        for prop in properties:
+            self.assertTrue(hasattr(thing, prop))
 
     def test_thing_relations(self):
         """
@@ -145,11 +147,12 @@ class A_1_2(APITestCase):
             self.assertTrue(hasattr(thing, entity))
 
 
-class A_1_3(APITestCase):
+class A13(APITestCase):
     """
     Check if each Location entity has the mandatory properties
     and mandatory relations as defined in this specification.
     """
+
     def setUp(self):
         """
         Create test resources.
@@ -159,7 +162,7 @@ class A_1_3(APITestCase):
             description='This is a sensor test',
             encodingType='application/vnd.geo+json',
             location=Point(954158.1, 4215137.1, srid=32140)
-            )
+        )
 
     def test_location_properties(self):
         """
@@ -172,8 +175,8 @@ class A_1_3(APITestCase):
             'encodingType',
             'location'
         ]
-        for property in properties:
-            self.assertTrue(hasattr(location, property))
+        for prop in properties:
+            self.assertTrue(hasattr(location, prop))
 
     def test_location_relations(self):
         """
@@ -188,11 +191,12 @@ class A_1_3(APITestCase):
             self.assertTrue(hasattr(location, entity))
 
 
-class A_1_4(APITestCase):
+class A14(APITestCase):
     """
     Check if each Historicalocation entity has the mandatory properties and
     mandatory relations as defined in this specification.
     """
+
     def setUp(self):
         """
         Create each resource
@@ -202,12 +206,12 @@ class A_1_4(APITestCase):
             description='This is a sensor test',
             encodingType='application/vnd.geo+json',
             location=Point(954158.1, 4215137.1, srid=32140)
-            )
+        )
         thing = Thing.objects.create(
             name='Thing 1',
             description='This is a thing',
             properties={}
-            )
+        )
         historicallocation = HistoricalLocation.objects.create(
             time=timezone.now(),
             Thing=thing
@@ -222,8 +226,8 @@ class A_1_4(APITestCase):
         properties = [
             'time'
         ]
-        for property in properties:
-            self.assertTrue(hasattr(hlocat, property))
+        for prop in properties:
+            self.assertTrue(hasattr(hlocat, prop))
 
     def test_historicallocation_relations(self):
         """
@@ -238,11 +242,12 @@ class A_1_4(APITestCase):
             self.assertTrue(hasattr(hlocat, entity))
 
 
-class A_1_5(APITestCase):
+class A15(APITestCase):
     """
     Check if each Datastream entity has the mandatory properties and
     mandatory relations as defined in this specification.
     """
+
     def setUp(self):
         """
         Create test resources.
@@ -251,18 +256,18 @@ class A_1_5(APITestCase):
             name='Thing 1',
             description='This is a thing',
             properties={}
-            )
+        )
         Sensor.objects.create(
             name='Temperature Sensor',
             description='This is a sensor test',
             encodingType='PDF',
             metadata='This is some very descriptive metadata.'
-            )
+        )
         ObservedProperty.objects.create(
             name='Temperature',
             definition='https://wikipedia.org',
             description='This is a test'
-            )
+        )
         Datastream.objects.create(
             name='Chunt',
             description='Bing Bong',
@@ -272,7 +277,7 @@ class A_1_5(APITestCase):
             Thing=Thing.objects.get(name='Thing 1'),
             Sensor=Sensor.objects.get(name='Temperature Sensor'),
             ObservedProperty=ObservedProperty.objects.get(name='Temperature')
-            )
+        )
 
     def test_datastream_properties(self):
         """
@@ -288,8 +293,8 @@ class A_1_5(APITestCase):
             'phenomenonTime',
             'resultTime'
         ]
-        for property in properties:
-            self.assertTrue(hasattr(datastream, property))
+        for prop in properties:
+            self.assertTrue(hasattr(datastream, prop))
 
     def test_datastream_relations(self):
         """
@@ -306,11 +311,12 @@ class A_1_5(APITestCase):
             self.assertTrue(hasattr(datastream, entity))
 
 
-class A_1_6(APITestCase):
+class A16(APITestCase):
     """
     Check if each Sensor entity has the mandatory properties and
     mandatory relations as defined in this specification.
     """
+
     def setUp(self):
         """
         Create each resource
@@ -320,7 +326,7 @@ class A_1_6(APITestCase):
             description='This is a sensor test',
             encodingType='PDF',
             metadata='This is some very descriptive metadata.'
-            )
+        )
 
     def test_sensor_properties(self):
         """
@@ -333,8 +339,8 @@ class A_1_6(APITestCase):
             'encodingType',
             'metadata'
         ]
-        for property in properties:
-            self.assertTrue(hasattr(sensor, property))
+        for prop in properties:
+            self.assertTrue(hasattr(sensor, prop))
 
     def test_sensor_relations(self):
         """
@@ -348,11 +354,12 @@ class A_1_6(APITestCase):
             self.assertTrue(hasattr(sensor, entity))
 
 
-class A_1_7(APITestCase):
+class A17(APITestCase):
     """
     Check if each ObservedProperty entity has the mandatory properties and
     mandatory relations as defined in this specification.
     """
+
     def setUp(self):
         """
         Create each resource
@@ -361,7 +368,7 @@ class A_1_7(APITestCase):
             name='Temperature',
             definition='https://wikipedia.org',
             description='This is a test'
-            )
+        )
 
     def test_observedproperty_properties(self):
         """
@@ -373,8 +380,8 @@ class A_1_7(APITestCase):
             'definition',
             'description'
         ]
-        for property in properties:
-            self.assertTrue(hasattr(observedproperty, property))
+        for prop in properties:
+            self.assertTrue(hasattr(observedproperty, prop))
 
     def test_observedproperty_relations(self):
         """
@@ -388,11 +395,12 @@ class A_1_7(APITestCase):
             self.assertTrue(hasattr(observedproperty, entity))
 
 
-class A_1_8(APITestCase):
+class A18(APITestCase):
     """
     Check if each Observation entity has the mandatory properties and
     mandatory relations as defined in this specification.
     """
+
     def setUp(self):
         """
         Create each resource
@@ -401,18 +409,18 @@ class A_1_8(APITestCase):
             name='Thing 1',
             description='This is a thing',
             properties={}
-            )
+        )
         Sensor.objects.create(
             name='Temperature Sensor',
             description='This is a sensor test',
             encodingType='PDF',
             metadata='This is some very descriptive metadata.'
-            )
+        )
         ObservedProperty.objects.create(
             name='Temperature',
             definition='https://wikipedia.org',
             description='This is a test'
-            )
+        )
         Datastream.objects.create(
             name='Chunt',
             description='Bing Bong',
@@ -422,7 +430,7 @@ class A_1_8(APITestCase):
             Thing=Thing.objects.get(name='Thing 1'),
             Sensor=Sensor.objects.get(name='Temperature Sensor'),
             ObservedProperty=ObservedProperty.objects.get(name='Temperature')
-            )
+        )
         FeatureOfInterest.objects.create(
             name='Usidore',
             description='this is a place',
@@ -439,7 +447,7 @@ class A_1_8(APITestCase):
             resultTime="2019-02-07T18:00:00.000Z",
             Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore')
-            )
+        )
 
     def test_observation_properties(self):
         """
@@ -454,8 +462,8 @@ class A_1_8(APITestCase):
             'validTime',
             'parameters'
         ]
-        for property in properties:
-            self.assertTrue(hasattr(observation, property))
+        for prop in properties:
+            self.assertTrue(hasattr(observation, prop))
 
     def test_observation_relations(self):
         """
@@ -470,11 +478,12 @@ class A_1_8(APITestCase):
             self.assertTrue(hasattr(observation, entity))
 
 
-class A_1_9(APITestCase):
+class A19(APITestCase):
     """
     Check if each FeatureOfInterest entity has the mandatory properties and
     mandatory relations as defined in this specification.
     """
+
     def setUp(self):
         """
         Create each resource
@@ -501,8 +510,8 @@ class A_1_9(APITestCase):
             'encodingType',
             'feature'
         ]
-        for property in properties:
-            self.assertTrue(hasattr(featureofinterest, property))
+        for prop in properties:
+            self.assertTrue(hasattr(featureofinterest, prop))
 
     def test_featureofinterest_relations(self):
         """
@@ -516,7 +525,7 @@ class A_1_9(APITestCase):
             self.assertTrue(hasattr(featureofinterest, entity))
 
 
-class A_1_10(APITestCase):
+class A110(APITestCase):
     """
     Check if the service supports all the resource path usages as defined
     in the requirement
@@ -531,24 +540,24 @@ class A_1_10(APITestCase):
             name='Temperature',
             definition='https://wikipedia.org',
             description='This is a test'
-            )
+        )
         Sensor.objects.create(
             name='Temperature Sensor',
             description='This is a sensor test',
             encodingType='PDF',
             metadata='This is some very descriptive metadata.'
-            )
+        )
         location = Location.objects.create(
             name='Location 1',
             description='This is a sensor test',
             encodingType='application/vnd.geo+json',
             location=Point(954158.1, 4215137.1, srid=32140)
-            )
+        )
         thing = Thing.objects.create(
             name='Thing 1',
             description='This is a thing',
             properties={}
-            )
+        )
         thing.Location.add(location)
         FeatureOfInterest.objects.create(
             name='Usidore',
@@ -570,54 +579,54 @@ class A_1_10(APITestCase):
             Sensor=Sensor.objects.get(name='Temperature Sensor'),
             ObservedProperty=ObservedProperty.objects.get(name='Temperature'),
             observedArea=Polygon(((0.0, 0.0),
-                             (0.0, 50.0),
-                             (50.0, 50.0),
-                             (50.0, 0.0),
-                             (0.0, 0.0))
-                            )
-            )
+                                  (0.0, 50.0),
+                                  (50.0, 50.0),
+                                  (50.0, 0.0),
+                                  (0.0, 0.0))
+                                 )
+        )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:01:00.000Z",
             result=42,
             Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:01:00.000Z",
-            )
+        )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:02:00.000Z",
             result=3,
             Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:02:00.000Z",
-            )
+        )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:03:00.000Z",
             result=15.7,
             Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:04:00.000Z",
-            )
+        )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:04:00.000Z",
             result=23,
             Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:04:00.000Z",
-            )
+        )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:05:00.000Z",
             result=1,
             Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:05:00.000Z",
-            )
+        )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:06:00.000Z",
             result=35,
             Datastream=Datastream.objects.get(name="Chunt"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:06:00.000Z",
-            )
+        )
 
     def test_no_resource_path(self):
         """
@@ -2309,13 +2318,13 @@ class A_1_10(APITestCase):
                           kwargs={'version': 'v1.0',
                                   'pk': thing.id
                                   })
-        for property in properties:
-            url = baseurl + '/' + property
+        for prop in properties:
+            url = baseurl + '/' + prop
             response = self.client.get(url, format='json')
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertIn(property, response.data)
-            if response.data[property]:
-                url = baseurl + '/' + property + '/$value'
+            self.assertIn(prop, response.data)
+            if response.data[prop]:
+                url = baseurl + '/' + prop + '/$value'
                 response = self.client.get(url, format='json')
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
                 self.assertTrue(response.data)
@@ -2336,13 +2345,13 @@ class A_1_10(APITestCase):
                           kwargs={'version': 'v1.0',
                                   'pk': location.id
                                   })
-        for property in properties:
-            url = baseurl + '/' + property
+        for prop in properties:
+            url = baseurl + '/' + prop
             response = self.client.get(url, format='json')
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertIn(property, response.data)
-            if response.data[property]:
-                url = baseurl + '/' + property + '/$value'
+            self.assertIn(prop, response.data)
+            if response.data[prop]:
+                url = baseurl + '/' + prop + '/$value'
                 response = self.client.get(url, format='json')
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
                 self.assertTrue(response.data)
@@ -2360,13 +2369,13 @@ class A_1_10(APITestCase):
                           kwargs={'version': 'v1.0',
                                   'pk': hlocat.id
                                   })
-        for property in properties:
-            url = baseurl + '/' + property
+        for prop in properties:
+            url = baseurl + '/' + prop
             response = self.client.get(url, format='json')
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertIn(property, response.data)
-            if response.data[property]:
-                url = baseurl + '/' + property + '/$value'
+            self.assertIn(prop, response.data)
+            if response.data[prop]:
+                url = baseurl + '/' + prop + '/$value'
                 response = self.client.get(url, format='json')
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
                 self.assertTrue(response.data)
@@ -2390,13 +2399,13 @@ class A_1_10(APITestCase):
                           kwargs={'version': 'v1.0',
                                   'pk': datastream.id
                                   })
-        for property in properties:
-            url = baseurl + '/' + property
+        for prop in properties:
+            url = baseurl + '/' + prop
             response = self.client.get(url, format='json')
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertIn(property, response.data)
-            if response.data[property]:
-                url = baseurl + '/' + property + '/$value'
+            self.assertIn(prop, response.data)
+            if response.data[prop]:
+                url = baseurl + '/' + prop + '/$value'
                 response = self.client.get(url, format='json')
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
                 self.assertTrue(response.data)
@@ -2417,13 +2426,13 @@ class A_1_10(APITestCase):
                           kwargs={'version': 'v1.0',
                                   'pk': sensor.id
                                   })
-        for property in properties:
-            url = baseurl + '/' + property
+        for prop in properties:
+            url = baseurl + '/' + prop
             response = self.client.get(url, format='json')
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertIn(property, response.data)
-            if response.data[property]:
-                url = baseurl + '/' + property + '/$value'
+            self.assertIn(prop, response.data)
+            if response.data[prop]:
+                url = baseurl + '/' + prop + '/$value'
                 response = self.client.get(url, format='json')
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
                 self.assertTrue(response.data)
@@ -2443,13 +2452,13 @@ class A_1_10(APITestCase):
                           kwargs={'version': 'v1.0',
                                   'pk': observedproperty.id
                                   })
-        for property in properties:
-            url = baseurl + '/' + property
+        for prop in properties:
+            url = baseurl + '/' + prop
             response = self.client.get(url, format='json')
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertIn(property, response.data)
-            if response.data[property]:
-                url = baseurl + '/' + property + '/$value'
+            self.assertIn(prop, response.data)
+            if response.data[prop]:
+                url = baseurl + '/' + prop + '/$value'
                 response = self.client.get(url, format='json')
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
                 self.assertTrue(response.data)
@@ -2473,13 +2482,13 @@ class A_1_10(APITestCase):
                                   'pk': observation.id
                                   })
 
-        for property in properties:
-            url = baseurl + '/' + property
+        for prop in properties:
+            url = baseurl + '/' + prop
             response = self.client.get(url, format='json')
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertIn(property, response.data)
-            if response.data[property]:
-                url = baseurl + '/' + property + '/$value'
+            self.assertIn(prop, response.data)
+            if response.data[prop]:
+                url = baseurl + '/' + prop + '/$value'
                 response = self.client.get(url, format='json')
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
                 self.assertTrue(response.data)
@@ -2500,13 +2509,13 @@ class A_1_10(APITestCase):
                           kwargs={'version': 'v1.0',
                                   'pk': featureofinterest.id
                                   })
-        for property in properties:
-            url = baseurl + '/' + property
+        for prop in properties:
+            url = baseurl + '/' + prop
             response = self.client.get(url, format='json')
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertIn(property, response.data)
-            if response.data[property]:
-                url = baseurl + '/' + property + '/$value'
+            self.assertIn(prop, response.data)
+            if response.data[prop]:
+                url = baseurl + '/' + prop + '/$value'
                 response = self.client.get(url, format='json')
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
                 self.assertTrue(response.data)
@@ -2534,14 +2543,14 @@ class A_1_10(APITestCase):
             Thing=Thing.objects.get(name='Thing 1'),
             Sensor=Sensor.objects.get(name='Temperature Sensor'),
             ObservedProperty=ObservedProperty.objects.get(name='Temperature')
-            )
+        )
         Observation.objects.create(
             phenomenonTime="2019-02-07T18:08:00.000Z",
             result=21,
             Datastream=Datastream.objects.get(name="Arnie"),
             FeatureOfInterest=FeatureOfInterest.objects.get(name='Usidore'),
             resultTime="2019-02-07T18:08:00.000Z",
-            )
+        )
 
         datastream = Datastream.objects.get(name='Arnie')
         baseurl = reverse('datastream-detail',
