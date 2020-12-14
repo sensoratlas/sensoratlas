@@ -3,5 +3,5 @@ from django.conf.urls import include
 
 
 urlpatterns = [
-    path('api/', include('sensorAtlas.urls'))
+    path('api/', include('sensoratlas.urls'))
 ]

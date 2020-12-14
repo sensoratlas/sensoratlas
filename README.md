@@ -13,6 +13,7 @@ Detailed documentation is in the "docs" directory.
 ```buildoutcfg
 INSTALLED_APPS = [
     ...
+    'rest_framework',
     'sensoratlas',
 ]
 ```
@@ -24,7 +25,7 @@ REST_FRAMEWORK = {
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
     'URL_FIELD_NAME': 'selfLink',
     'ORDERING_PARAM': '$orderby',
-    'DEFAULT_PAGINATION_CLASS': 'sensoratlas.query_options.SensorThingsPagination',
+    'DEFAULT_PAGINATION_CLASS': 'sensoratlas.pagination.SensorThingsPagination',
     'PAGE_SIZE': 100,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json'
 }
@@ -36,9 +37,11 @@ REST_FRAMEWORK = {
 path('api/', include('sensoratlas.urls')),
 ```
 
-5. Run `python manage.py migrate` to create the sensorAtlas models.
+5. Run `python manage.py makemigrations sensoratlas` to create the sensorAtlas models.
 
-6. Start the development server and visit http://127.0.0.1:8000/api/v1.0/
+6. Run `python manage.py migrate sensoratlas` to create the sensorAtlas models.
+
+7. Start the development server and visit http://127.0.0.1:8000/api/v1.0/
 
 ## Tests
 

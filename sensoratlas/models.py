@@ -131,13 +131,13 @@ class Datastream(models.Model):
     phenomenonTime = DateTimeRangeField(
         blank=True,
         null=True,
-        # validators=[Validators.validate_interval],
+        # validators=[validate_interval],
         verbose_name="Phenomenon Time"
         )
     resultTime = DateTimeRangeField(
         blank=True,
         null=True,
-        # validators=[Validators.validate_interval],
+        # validators=[validate_interval],
         verbose_name="Result Time"
         )
     Thing = models.ForeignKey(

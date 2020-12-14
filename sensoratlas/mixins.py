@@ -5,7 +5,6 @@ from .errors import Conflicts, NotImplemented501
 from .parsers import CustomParser
 from rest_framework.reverse import reverse
 import json
-from .models import Datastream
 
 
 class ControlInformation:
@@ -252,8 +251,6 @@ class Expand(ExpanderSerializerMixin):
                 kwargs = kwargs.copy()
                 kwargs.setdefault('context', self.context)
 
-                print("context", context)
-
                 if issubclass(serializer_class, Expand):
                     serializer = serializer_class(
                         expanded_fields=qs_from_dict(nested_expand),
@@ -265,9 +262,6 @@ class Expand(ExpanderSerializerMixin):
                         *args,
                         **kwargs
                     )
-
-                print(serializer)
-                print(serializer.__dict__)
 
                 self.fields[expanded_field] = serializer
                 Conflicts.conflicts = []
@@ -286,7 +280,6 @@ class Select(serializers.ModelSerializer):
             select = select.split(',')
             allowed = set(select)
             existing = set(self.fields.keys())
-            print("existing", existing)
             for selected in existing - allowed:
                 # not self.fields --> this does all fields. It shuold be the fields in the unnested serializer
                 self.fields.pop(selected)
@@ -295,6 +288,6 @@ class Select(serializers.ModelSerializer):
 class ResultFormat(object):
     def __init__(self, *args, **kwargs):
         super(ResultFormat, self).__init__(*args, **kwargs)
-        resultFormat = self.context['request'].query_params.get('$resultFormat')
-        if resultFormat:
+        result_format = self.context['request'].query_params.get('$resultFormat')
+        if result_format:
             raise NotImplemented501()

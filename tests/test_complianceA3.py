@@ -1,12 +1,13 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
-from sensorAtlas.models import Thing, Location, Datastream, Sensor, \
+from sensoratlas.models import Thing, Location, Datastream, Sensor, \
     ObservedProperty, Observation, FeatureOfInterest, HistoricalLocation
 from django.contrib.gis.geos import Point, Polygon
 from django.urls import reverse
+from unittest import skip
 
 
-class A_3_1_1(APITestCase):
+class A311(APITestCase):
     """
     Check if the service supports the creation of entities as defined in
     this specification.
@@ -16,40 +17,40 @@ class A_3_1_1(APITestCase):
     # related entities with a single request (i.e., deep insert), check
     # if the entity instance is successfully created and the server responds
     # as defined in this specification.
-    # def test_create_thing(self):
-    #     """
-    #     Create a Thing without a Location.
-    #     """
-    #     url = reverse('thing-list',
-    #                   kwargs={'version': 'v1.0'})
-    #     data = {
-    #             "name": "Temperature Monitoring System",
-    #             "description": "Sensor system monitoring area temperature",
-    #             "properties": {
-    #                 "Deployment Condition": "Deployed in a third floor balcony",
-    #                 "Case Used": "Radiation shield"
-    #             }
-    #            }
-    #     response = self.client.post(url, data, format='json')
-    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-    #
-    # def test_create_location(self):
-    #     """
-    #     Create a Location without a Thing.
-    #     """
-    #     url = reverse('location-list',
-    #                   kwargs={'version': 'v1.0'})
-    #     data = {
-    #             "name": "UofC CCIT",
-    #             "description": "University of Calgary, CCIT building",
-    #             "encodingType": "application/vnd.geo+json",
-    #             "location": {
-    #                 "type": "Point",
-    #                 "coordinates": [-114.133, 51.08]
-    #             }
-    #         }
-    #     response = self.client.post(url, data, format='json')
-    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    def test_create_thing(self):
+        """
+        Create a Thing without a Location.
+        """
+        url = reverse('thing-list',
+                      kwargs={'version': 'v1.0'})
+        data = {
+                "name": "Temperature Monitoring System",
+                "description": "Sensor system monitoring area temperature",
+                "properties": {
+                    "Deployment Condition": "Deployed in a third floor balcony",
+                    "Case Used": "Radiation shield"
+                }
+               }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_location(self):
+        """
+        Create a Location without a Thing.
+        """
+        url = reverse('location-list',
+                      kwargs={'version': 'v1.0'})
+        data = {
+                "name": "UofC CCIT",
+                "description": "University of Calgary, CCIT building",
+                "encodingType": "application/vnd.geo+json",
+                "location": {
+                    "type": "Point",
+                    "coordinates": [-114.133, 51.08]
+                }
+            }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_create_historicallocation(self):
         """
@@ -1702,6 +1703,7 @@ class A_3_1_2(APITestCase):
     # For each SensorThings entity type send an update request with PATCH that
     # contains related entities as inline content, check if the service fails
     # the request and returns appropriate HTTP status code.
+    @skip("Skipping test of feature that is not yet implemented")
     def test_update_thing_inline(self):
         url = reverse('thing-list',
                       kwargs={'version': 'v1.0'})
@@ -1756,6 +1758,7 @@ class A_3_1_2(APITestCase):
         self.assertEqual(response.data['Locations'][0]['name'], 'Location 42')
         self.assertTrue(response.data['Locations'], 1)
 
+    @skip("Skipping test of feature that is not yet implemented")
     def test_update_thing_inline_fail(self):
         url = reverse('thing-list',
                       kwargs={'version': 'v1.0'})

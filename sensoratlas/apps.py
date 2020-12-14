@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class sensorAtlasConfig(AppConfig):
-    name = 'sensorAtlas'
+class SensorAtlasConfig(AppConfig):
+    name = 'sensoratlas'
     verbose_name = 'Sensor Atlas'

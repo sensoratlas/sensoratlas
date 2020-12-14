@@ -1,5 +1,5 @@
 from django.urls import re_path, include
-from sensorAtlas.router import Router
+from sensoratlas.router import Router
 from .routers import LocationRouter
 from .routers import ThingRouter
 from .routers import DatastreamRouter

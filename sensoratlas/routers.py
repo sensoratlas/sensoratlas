@@ -1,5 +1,5 @@
 from .router import Router, NestedSimpleRouter
-import sensorAtlas.views as view
+import sensoratlas.views as view
 
 
 class ThingRouter:

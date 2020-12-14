@@ -193,7 +193,7 @@ class NestedViewSet:
 
     def get_or_create_children(self, data, given_entity, **kwargs):
         entity = MODEL_KEYS[given_entity]
-        model = apps.get_model('sensorAtlas', entity)
+        model = apps.get_model('sensoratlas', entity)
 
         many_children = False
         if isinstance(data, dict):
@@ -269,7 +269,7 @@ class NestedViewSet:
 
     def get_or_update_children(self, data, given_entity):
         entity = MODEL_KEYS[given_entity]
-        model = apps.get_model('sensorAtlas', entity)
+        model = apps.get_model('sensoratlas', entity)
 
         if isinstance(data, dict):
             if "@iot.id" in data:

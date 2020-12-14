@@ -1,6 +1,6 @@
 from .models import Location, Thing, Datastream, Sensor, \
     ObservedProperty, Observation, FeatureOfInterest, HistoricalLocation
-import sensorAtlas.serializer as serializers
+import sensoratlas.serializer as serializers
 from .parsers import Filter, Orderby
 from .viewsets import ViewSet
 from rest_framework import generics
