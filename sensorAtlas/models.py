@@ -4,7 +4,8 @@ doc string here...
 """
 
 from django.contrib.gis.db import models
-from django.contrib.postgres.fields import JSONField, DateTimeRangeField
+from django.db.models import JSONField
+from django.contrib.postgres.fields import DateTimeRangeField
 from django.db.models.signals import m2m_changed
 from django.utils import timezone
 from django.dispatch import receiver
